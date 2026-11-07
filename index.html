@@ -34,6 +34,7 @@
   .carte-accueil header p{margin:6px 0 0;font-size:13px;opacity:.85}
   .carte-accueil .corps{padding:20px 24px 24px}
   .liste-users{display:grid;gap:8px;max-height:260px;overflow:auto}
+  .choix-user{font-size:16px;padding:12px 14px;min-height:48px;cursor:pointer}
   .user{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1px solid var(--ligne);border-radius:10px;background:#fff;text-align:left}
   .user.actif{border-color:var(--bleu);background:#EEF2FA}
   .user small{color:var(--gris)}
@@ -247,7 +248,7 @@
     <header><h1 class="nom-ent">MAGASIN MOINS CHER</h1><p>Gestion des stocks &amp; caisses</p></header>
     <div class="corps">
       <label>Qui êtes-vous ?</label>
-      <div id="liste-users" class="liste-users"></div>
+      <select id="con-user" class="choix-user" aria-label="Qui êtes-vous ?" onchange="choisirUser(this)"></select>
       <label>Code PIN</label>
       <input id="con-pin" class="pin" type="password" inputmode="numeric" maxlength="6"
              onkeydown="if(event.key==='Enter')connexion(document.getElementById('btn-con'))">
@@ -729,15 +730,21 @@ async function demarrer(){
 function ecranConnexion(){
   S.choixUser = null;
   $('con-pin').value = ''; $('con-msg').textContent = '';
-  $('liste-users').innerHTML = S.etat.utilisateurs.map(u =>
-    '<button class="user" data-code="' + esc(u.code) + '" onclick="choisirUser(this)">' +
-    '<span>' + esc(u.nom) + '</span><small>' + esc(u.fonction) + '</small></button>').join('');
+  const rang = f => f === 'Gérant' ? 0 : 1;
+  const liste = S.etat.utilisateurs.slice().sort((a, b) => rang(a.fonction) - rang(b.fonction) || a.nom.localeCompare(b.nom));
+  const dernier = lireL('mmc_dernier', '');
+  const pre = liste.length === 1 ? liste[0].code : (liste.some(u => u.code === dernier) ? dernier : '');
+  $('con-user').innerHTML = '<option value="">— Choisissez votre nom —</option>' +
+    liste.map(u => '<option value="' + esc(u.code) + '"' + (u.code === pre ? ' selected' : '') + '>' + esc(u.nom) + ' — ' + esc(u.fonction) + '</option>').join('');
   afficher('connexion');
+  if (pre) choisirUser($('con-user'));
 }
 
-function choisirUser(b){
-  document.querySelectorAll('.user').forEach(x => x.classList.remove('actif'));
-  b.classList.add('actif'); S.choixUser = b.dataset.code; $('con-pin').focus();
+function choisirUser(s){
+  S.choixUser = s.value || null;
+  $('con-msg').textContent = '';
+  if (!S.choixUser) return;
+  $('con-pin').value = ''; $('con-pin').focus();
   if (!navigator.onLine) $('con-msg').textContent = 'Hors ligne : seuls les comptes déjà connectés sur cet appareil peuvent entrer.';
 }
 
@@ -766,7 +773,7 @@ async function connexion(btn){
   });
 }
 
-function entrer(r){ S.token = r.token; S.user = r.utilisateur; HL.local = false; ecrireToken(r.token);
+function entrer(r){ S.token = r.token; S.user = r.utilisateur; HL.local = false; ecrireToken(r.token); ecrireL('mmc_dernier', r.utilisateur.code);
   if (!MODE_GAS) ecrireL('mmc_moi', { token: r.token, user: r.utilisateur });
   ouvrirApp(); }
 
