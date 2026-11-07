@@ -1,0 +1,2326 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MAGASIN MOINS CHER</title>
+<meta name="theme-color" content="#1F3864">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icone-192.png">
+<link rel="apple-touch-icon" href="icone-192.png">
+<meta charset="utf-8">
+<style>
+  :root{
+    --bleu:#1F3864; --bleu2:#2E4F8A; --orange:#C55A11; --fond:#F3F5F9; --carte:#FFFFFF;
+    --texte:#1C2333; --gris:#6B7385; --ligne:#E2E6EE; --ok:#1E7B45; --err:#B3261E;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--fond);color:var(--texte);font-size:15px}
+  .cache{display:none!important}
+  button{font:inherit;cursor:pointer}
+  input,select,textarea{font:inherit;width:100%;padding:10px 12px;border:1px solid var(--ligne);border-radius:8px;background:#fff}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--bleu2);border-color:transparent}
+  label{display:block;font-size:13px;font-weight:bold;color:var(--gris);margin:12px 0 5px}
+  .btn{border:0;border-radius:8px;padding:10px 18px;background:var(--bleu);color:#fff;font-weight:bold}
+  .btn:hover{background:var(--bleu2)}
+  .btn.second{background:#fff;color:var(--bleu);border:1px solid var(--ligne)}
+  .btn.orange{background:var(--orange)}
+  .btn:disabled{opacity:.5;cursor:wait}
+
+  /* Écrans d'accueil */
+  .centre{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+  .carte-accueil{background:var(--carte);border-radius:14px;box-shadow:0 6px 24px rgba(31,56,100,.12);width:100%;max-width:420px;overflow:hidden}
+  .carte-accueil header{background:var(--bleu);color:#fff;padding:22px 24px}
+  .carte-accueil header h1{margin:0;font-size:20px;letter-spacing:.5px}
+  .carte-accueil header p{margin:6px 0 0;font-size:13px;opacity:.85}
+  .carte-accueil .corps{padding:20px 24px 24px}
+  .liste-users{display:grid;gap:8px;max-height:260px;overflow:auto}
+  .user{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1px solid var(--ligne);border-radius:10px;background:#fff;text-align:left}
+  .user.actif{border-color:var(--bleu);background:#EEF2FA}
+  .user small{color:var(--gris)}
+  .pin{font-size:22px;letter-spacing:8px;text-align:center}
+  .msg{margin-top:12px;font-size:13px;min-height:18px;color:var(--err)}
+
+  /* Application */
+  .barre{background:var(--bleu);color:#fff;display:flex;align-items:center;gap:12px;padding:10px 18px;position:sticky;top:0;z-index:5}
+  .barre h1{font-size:17px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .barre .qui{font-size:13px;text-align:right;line-height:1.2}
+  .barre .qui small{opacity:.75}
+  .barre .btn{background:rgba(255,255,255,.15);padding:8px 12px}
+  .app{display:flex;min-height:calc(100vh - 56px)}
+  nav{width:230px;background:#fff;border-right:1px solid var(--ligne);padding:12px 8px;flex-shrink:0}
+  nav button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:11px 12px;border-radius:8px;color:var(--texte)}
+  nav button:hover{background:var(--fond)}
+  nav button.actif{background:#EEF2FA;color:var(--bleu);font-weight:bold}
+  nav button .etape{margin-left:auto;font-size:11px;color:var(--gris)}
+  main{flex:1;padding:22px;min-width:0}
+  main h2{margin:0 0 16px;font-size:21px;color:var(--bleu)}
+  .bloc{background:var(--carte);border-radius:12px;border:1px solid var(--ligne);padding:18px}
+  .onglets{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  .onglets button{border:1px solid var(--ligne);background:#fff;border-radius:20px;padding:8px 16px}
+  .onglets button.actif{background:var(--bleu);color:#fff;border-color:var(--bleu)}
+  .grille{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+  .entete-bloc{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:12px;text-transform:uppercase;color:var(--gris);padding:10px;border-bottom:2px solid var(--ligne)}
+  td{padding:11px 10px;border-bottom:1px solid var(--ligne)}
+  tbody tr{cursor:pointer}
+  tbody tr:hover{background:#F7F9FC}
+  .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:bold}
+  .badge.oui{background:#E3F4EA;color:var(--ok)}
+  .badge.non{background:#F6E3E1;color:var(--err)}
+  .vide{color:var(--gris);text-align:center;padding:28px}
+  .bientot{text-align:center;padding:50px 20px;color:var(--gris)}
+  .bientot b{display:block;font-size:18px;color:var(--bleu);margin-bottom:6px}
+
+  /* Fenêtre modale */
+  .voile{position:fixed;inset:0;background:rgba(20,30,50,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+  .modale{background:#fff;border-radius:14px;width:100%;max-width:520px;max-height:92vh;overflow:auto;padding:22px}
+  .modale h3{margin:0 0 6px;color:var(--bleu)}
+  .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ok);color:#fff;padding:12px 20px;border-radius:10px;z-index:30;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+  .toast.err{background:var(--err)}
+
+  .modale.large{max-width:880px}
+  .ligne-achat{display:grid;grid-template-columns:2.4fr .8fr 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px}
+  .ligne-achat .st{text-align:right;font-weight:bold;white-space:nowrap}
+  .ligne-achat .btn{padding:8px 12px}
+  .totaux{display:flex;justify-content:flex-end;gap:24px;flex-wrap:wrap;margin-top:12px;font-size:15px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:14px}
+  .stat{background:var(--carte);border:1px solid var(--ligne);border-radius:12px;padding:14px}
+  .stat small{color:var(--gris);display:block;margin-bottom:4px}
+  .stat b{font-size:19px;color:var(--bleu)}
+
+  .caisse{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
+  .caisse > *{min-width:0}
+  @media (max-width:1150px){ .caisse{grid-template-columns:1fr} .recap{position:static} }
+  .recherche-art{position:relative}
+  .recherche-art input{font-size:17px;padding:13px 14px}
+  .suggs{position:absolute;left:0;right:0;top:100%;background:#fff;border:1px solid var(--ligne);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:10;max-height:380px;overflow:auto;margin-top:4px}
+  .sugg{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--ligne)}
+  .sugg:hover,.sugg.actif{background:#EEF2FA}
+  .sugg small{color:var(--gris)}
+  .sugg.rupture{opacity:.6}
+  .sugg .droite{text-align:right;white-space:nowrap}
+  .panier td{vertical-align:middle}
+  .panier td input{padding:7px 8px;width:100px}
+  .recap{position:sticky;top:70px}
+  .recap .ligne{display:flex;justify-content:space-between;align-items:center;margin:10px 0}
+  .recap .net{font-size:22px;font-weight:bold;color:var(--bleu)}
+  .monnaie{background:#E3F4EA;color:var(--ok);padding:12px 16px;border-radius:10px;font-size:18px;margin:0 0 14px}
+  .fact{font-family:Arial,Helvetica,sans-serif;color:#111;font-size:13px}
+  .fact.apercu{border:1px solid var(--ligne);border-radius:8px;padding:20px}
+  .fact .ent{display:flex;justify-content:space-between;gap:20px;border-bottom:3px solid #1F3864;padding-bottom:12px;margin-bottom:14px}
+  .fact h1{font-size:22px;margin:0 0 4px;color:#1F3864}
+  .fact .num{text-align:right;white-space:nowrap}
+  .fact .num b{font-size:18px;color:#C55A11}
+  .fact table th{background:#1F3864;color:#fff;text-transform:none;font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .fact table td{padding:7px 10px}
+  .fact .tot{margin-left:auto;width:300px;max-width:100%;margin-top:10px}
+  .fact .tot div{display:flex;justify-content:space-between;gap:10px;padding:4px 0}
+  .fact .tot .net{font-size:16px;font-weight:bold;border-top:2px solid #111;padding-top:6px}
+  .fact .lettres{margin-top:16px}
+  .fact .pied{margin-top:36px;display:flex;justify-content:space-between;font-size:12px;color:#444}
+  .fact .annulee{color:#B3261E;font-size:20px;font-weight:bold;text-align:center;border:3px solid #B3261E;padding:6px;margin-bottom:12px}
+  #impression{display:none}
+  @media print{
+    body{background:#fff}
+    body > *:not(#impression){display:none!important}
+    #impression{display:block}
+    @page{size:A4;margin:12mm}
+  }
+
+
+  /* ===== Aide intégrée ===== */
+  .aide{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;line-height:1.4;color:#4A5468;background:#F2F6FC;border-left:3px solid var(--bleu2);border-radius:6px;padding:7px 10px;margin:6px 0 0}
+  .aide::before{content:'i';flex:0 0 16px;height:16px;margin-top:1px;border-radius:50%;background:var(--bleu2);color:#fff;font:italic bold 11px/16px Georgia,serif;text-align:center}
+  .info{position:relative;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#DDE5F2;color:var(--bleu);font:italic bold 11px/1 Georgia,serif;cursor:help;margin-left:6px;vertical-align:1px;outline:none}
+  .info:hover,.info:focus,.info.ouvert{background:var(--bleu2);color:#fff}
+  .info:hover::after,.info:focus::after,.info.ouvert::after{content:attr(data-tip);position:absolute;left:-10px;top:calc(100% + 9px);width:max-content;max-width:250px;background:#1C2333;color:#fff;font:normal 12.5px/1.45 Arial,sans-serif;padding:9px 11px;border-radius:8px;box-shadow:0 8px 22px rgba(0,0,0,.22);z-index:60;text-align:left;white-space:normal}
+  .info.g::after{left:auto;right:-10px}
+  .info.g::before{left:auto;right:2px}
+  .info:hover::before,.info:focus::before,.info.ouvert::before{content:'';position:absolute;left:2px;top:calc(100% + 3px);border:6px solid transparent;border-bottom-color:#1C2333;border-top:0;z-index:61}
+  .etat-vide{text-align:center;padding:34px 16px 30px;color:var(--gris)}
+  .etat-vide .ico{width:66px;height:66px;margin:0 auto 12px;border-radius:50%;background:linear-gradient(135deg,#EEF2FA,#E2E9F6);display:flex;align-items:center;justify-content:center}
+  .etat-vide b{display:block;color:var(--bleu);font-size:16px;margin-bottom:5px}
+  .etat-vide p{margin:0 auto 14px;max-width:430px;line-height:1.45}
+  .etat-vide.petit{padding:18px 10px}
+  .etat-vide.petit .ico{width:48px;height:48px;margin-bottom:8px}
+  .astuce{display:flex;gap:12px;align-items:flex-start;background:linear-gradient(90deg,#FFF4EA,#FFFBF7);border:1px solid #F4CBA8;border-radius:12px;padding:12px 12px 12px 14px;margin-bottom:14px;animation:apparait .35s ease}
+  .astuce .ampoule{flex:0 0 30px;height:30px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center}
+  .astuce div{flex:1;font-size:13.5px;line-height:1.5;color:#3B3226}
+  .astuce div b{color:var(--orange)}
+  .astuce button{border:0;background:none;color:#A08C7A;font-size:20px;line-height:1;padding:0 4px;cursor:pointer}
+  .astuce button:hover{color:var(--orange)}
+  @keyframes apparait{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .aide-hero{background:linear-gradient(135deg,var(--bleu) 0%,var(--bleu2) 100%);color:#fff;border-radius:16px;padding:24px 24px 20px;margin-bottom:16px;position:relative;overflow:hidden}
+  .aide-hero::after{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.07)}
+  .aide-hero h2{color:#fff;margin:0 0 6px;font-size:22px}
+  .aide-hero p{margin:0 0 14px;opacity:.88;max-width:560px;line-height:1.45}
+  .aide-hero input{max-width:420px;border:0;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+  .aide-grille{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+  .guide{background:#fff;border:1px solid var(--ligne);border-radius:12px;overflow:hidden;transition:box-shadow .2s}
+  .guide[open]{box-shadow:0 6px 20px rgba(31,56,100,.09)}
+  .guide summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 16px}
+  .guide summary::-webkit-details-marker{display:none}
+  .guide summary .pastille{width:38px;height:38px;border-radius:11px;background:#EEF2FA;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .guide summary .titre{font-weight:bold;color:var(--texte)}
+  .guide summary small{display:block;font-weight:normal;color:var(--gris);font-size:12.5px;margin-top:2px}
+  .guide summary::after{content:'›';margin-left:auto;font-size:24px;line-height:1;color:var(--gris);transition:transform .2s}
+  .guide[open] summary::after{transform:rotate(90deg)}
+  .guide ol{margin:0;padding:0 18px 6px 66px}
+  .guide li{margin:7px 0;line-height:1.5}
+  .guide .aide{margin:6px 16px 16px 66px}
+  .etiquette{display:inline-block;font-size:11px;font-weight:bold;padding:2px 8px;border-radius:10px;background:#FBE9DC;color:var(--orange);margin-left:6px;vertical-align:1px}
+
+  /* ===== Dépôts ===== */
+  .depots-barre{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+  .depot-carte{border:1px solid var(--ligne);background:#fff;border-radius:12px;padding:8px 14px 8px 9px;cursor:pointer;text-align:left;font:inherit;color:var(--texte);display:flex;gap:10px;align-items:center;transition:box-shadow .15s,border-color .15s}
+  .depot-carte:hover{border-color:var(--bleu2)}
+  .depot-carte b{display:block;font-size:13.5px}
+  .depot-carte small{color:var(--gris);font-size:12px}
+  .depot-carte.actif{border-color:var(--bleu2);background:#EEF2FA;box-shadow:inset 0 0 0 1px var(--bleu2)}
+  .depot-carte .pt{width:32px;height:32px;border-radius:9px;background:#EEF2FA;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .depot-carte.actif .pt{background:#fff}
+  .repartition{display:block;font-size:12px;color:var(--gris);margin-top:2px}
+  .repartition span{white-space:nowrap}
+  .mag-tag{display:inline-block;font-size:10.5px;font-weight:bold;padding:1px 7px;border-radius:8px;background:#E3F1E7;color:var(--ok);margin-left:6px;vertical-align:1px}
+  .ligne-achat.ligne-tr{grid-template-columns:2.4fr .9fr 1fr auto}
+  .btn-ico{display:inline-flex;gap:7px;align-items:center}
+
+  /* ===== Hors ligne ===== */
+  .reseau{display:inline-flex;align-items:center;gap:7px;border:0;border-radius:16px;padding:6px 12px;font:bold 12.5px Arial,Helvetica,sans-serif;cursor:pointer;white-space:nowrap}
+  .reseau i{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .reseau.ok{background:rgba(255,255,255,.14);color:#fff}.reseau.ok i{background:#5DD39E}
+  .reseau.hl{background:#FDECEA;color:#8A1C14}.reseau.hl i{background:#B3261E}
+  .reseau.att{background:#FFF1E3;color:#7A3A06}.reseau.att i{background:#C55A11}
+  .reseau b{background:#C55A11;color:#fff;border-radius:10px;padding:2px 8px;font-size:11.5px}
+  .facture-hl{border:1px dashed #999;padding:6px 8px;font-size:12px;margin:4px 0 8px}
+
+  /* Téléphone */
+  @media (max-width:760px){
+    .app{flex-direction:column}
+    nav{width:100%;display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid var(--ligne);padding:6px}
+    nav button{white-space:nowrap;width:auto}
+    nav button .etape{display:none}
+    main{padding:14px}
+    .grille{grid-template-columns:1fr}
+    .barre .qui small{display:none}
+    .col-mobile-cache{display:none}
+    .aide-grille{grid-template-columns:1fr}
+    .ligne-achat.ligne-tr{grid-template-columns:1fr 1fr}
+    .guide ol{padding-left:44px}
+    .guide .aide{margin-left:16px}
+    .ligne-achat{grid-template-columns:1fr 1fr;padding-bottom:8px;border-bottom:1px dashed var(--ligne)}
+    .ligne-achat select{grid-column:1/-1}
+    .caisse{grid-template-columns:1fr}
+    .recap{position:static}
+    .fact .ent{flex-direction:column}
+    .fact .num{text-align:left}
+  }
+</style>
+</head>
+<body>
+
+<!-- Chargement -->
+<div id="ecran-chargement" class="centre"><p style="color:var(--gris)">Chargement…</p></div>
+
+<!-- Premier lancement -->
+<div id="ecran-installation" class="centre cache">
+  <div class="carte-accueil">
+    <header><h1 class="nom-ent">MAGASIN MOINS CHER</h1><p>Premier lancement — création du compte gérant</p></header>
+    <div class="corps">
+      <label>Nom et prénom du gérant</label>
+      <input id="ins-nom" autocomplete="off">
+      <label>Code PIN (4 à 6 chiffres)</label>
+      <input id="ins-pin" class="pin" type="password" inputmode="numeric" maxlength="6">
+      <label>Confirmer le code PIN</label>
+      <input id="ins-pin2" class="pin" type="password" inputmode="numeric" maxlength="6">
+      <button class="btn" style="width:100%;margin-top:18px" onclick="creerGerant(this)">Créer le compte</button>
+      <div class="msg" id="ins-msg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Connexion -->
+<div id="ecran-connexion" class="centre cache">
+  <div class="carte-accueil">
+    <header><h1 class="nom-ent">MAGASIN MOINS CHER</h1><p>Gestion des stocks &amp; caisses</p></header>
+    <div class="corps">
+      <label>Qui êtes-vous ?</label>
+      <div id="liste-users" class="liste-users"></div>
+      <label>Code PIN</label>
+      <input id="con-pin" class="pin" type="password" inputmode="numeric" maxlength="6"
+             onkeydown="if(event.key==='Enter')connexion(document.getElementById('btn-con'))">
+      <button id="btn-con" class="btn" style="width:100%;margin-top:18px" onclick="connexion(this)">Se connecter</button>
+      <div class="msg" id="con-msg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Application -->
+<div id="ecran-app" class="cache">
+  <div class="barre">
+    <h1 class="nom-ent">MAGASIN MOINS CHER</h1>
+    <button id="btn-installer" class="btn cache" onclick="installerApp()">Installer l'application</button>
+    <button id="etat-reseau" class="reseau ok" onclick="ouvrirAttente()" aria-label="État de la connexion et ventes en attente"></button>
+    <div class="qui"><span id="qui-nom"></span><br><small id="qui-fonction"></small></div>
+    <button class="btn" onclick="deconnexion()">Quitter</button>
+  </div>
+  <div class="app">
+    <nav id="menu"></nav>
+    <main id="vue"></main>
+  </div>
+</div>
+
+<div id="modale-zone"></div>
+<div id="toast-zone"></div>
+<div id="impression"></div>
+
+<script>
+/* ===== État ===== */
+const S = { token: null, user: null, etat: null, data: null, vue: 'accueil', onglet: 'entreprise', choixUser: null };
+let tokenMemoire = null;
+
+/* ===== Application installable / hors ligne : réglages ===== */
+const MODE_GAS = !!(window.google && google.script && google.script.run);   // ouvert depuis le lien Google
+const APPS_URL = 'https://script.google.com/macros/s/AKfycbwAj_DbvAratU-GgQq2AFj0oUwBul6NPmX-VKFewRpS93JG7ZJQgO7tWRQDYXykPCNn/exec';
+const HL = { en: true, envoi: false, local: false, install: null };
+function lireL(k, def){ try { const v = localStorage.getItem(k); return v == null ? def : JSON.parse(v); } catch(e){ return def; } }
+function ecrireL(k, v){ try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } }
+
+const MODULES = [
+  { id: 'accueil',     nom: 'Tableau de bord',          etape: 9, gerant: true, pret: true },
+  { id: 'caisse',      nom: 'Caisse & ventes',          etape: 5, pret: true },
+  { id: 'articles',    nom: 'Articles',                 etape: 2, pret: true },
+  { id: 'achats',      nom: 'Achats & livraisons',      etape: 4, gerant: true, pret: true },
+  { id: 'stock',       nom: 'Stock & inventaire',       etape: 7, pret: true },
+  { id: 'tiers',       nom: 'Clients & fournisseurs',   etape: 3, pret: true },
+  { id: 'depenses',    nom: 'Dépenses',                 etape: 6, pret: true },
+  { id: 'impayes',     nom: 'Impayés & règlements',     etape: 8, pret: true },
+  { id: 'parametres',  nom: 'Paramètres',               etape: 1, gerant: true, pret: true },
+  { id: 'aide',        nom: 'Aide',                     etape: 0, pret: true }
+];
+
+/* ===== Outils ===== */
+function $(id){ return document.getElementById(id); }
+function esc(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function msgErreur(e){ return String((e && e.message) || e || 'Erreur inconnue').replace(/^Error:\s*/, ''); }
+
+function memoire(){ return MODE_GAS ? sessionStorage : localStorage; }
+function lireToken(){ try { return memoire().getItem('mmc_token') || tokenMemoire; } catch(e){ return tokenMemoire; } }
+function ecrireToken(t){ tokenMemoire = t; try { t ? memoire().setItem('mmc_token', t) : memoire().removeItem('mmc_token'); } catch(e){} }
+
+function erreurHL(texte){
+  const e = new Error(texte || 'Pas de connexion internet : cette opération sera possible au retour de la connexion. La caisse, elle, fonctionne hors ligne.');
+  e.horsLigne = true;
+  return e;
+}
+
+function api(fn, ...args){
+  if (HL.local && !/^api(Connexion|Etat)$/.test(fn)) return Promise.reject(erreurHL('Reconnectez-vous (code PIN) pour utiliser cet écran : vous êtes entré hors ligne.'));
+  if (!navigator.onLine) { reseau(false); return Promise.reject(erreurHL()); }
+  return (MODE_GAS ? appelGoogle(fn, args) : appelWeb(fn, args)).then(r => {
+    reseau(true);
+    if (ECRITURES.test(fn)) apresEcriture();
+    return r;
+  }, e => {
+    if (e && e.horsLigne) { reseau(false); throw e; }
+    reseau(true);
+    if (msgErreur(e).indexOf('SESSION_EXPIREE') >= 0) {
+      finSession(); toast('Session expirée : reconnectez-vous.', true);
+      throw new Error('Session expirée.');
+    }
+    throw e;
+  });
+}
+
+function appelGoogle(fn, args){
+  return new Promise((ok, ko) => google.script.run
+    .withSuccessHandler(ok)
+    .withFailureHandler(e => ko(/NetworkError|HTTP 0|Failed to fetch|network/i.test(msgErreur(e)) ? erreurHL() : e))[fn](...args));
+}
+
+async function appelWeb(fn, args){
+  let rep;
+  try {
+    const ctrl = new AbortController(), minuterie = setTimeout(() => ctrl.abort(), 60000);
+    const res = await fetch(APPS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                                        body: JSON.stringify({ fn: fn, args: args }), signal: ctrl.signal });
+    clearTimeout(minuterie);
+    rep = await res.json();
+  } catch(e) { throw erreurHL(); }
+  if (!rep || !rep.ok) throw new Error((rep && rep.e) || 'Erreur du serveur.');
+  return rep.r;
+}
+
+/* ===== Affichage instantané : dernière version connue tout de suite, mise à jour en arrière-plan ===== */
+const CACHE = {}, META = {};
+const ECRITURES = /^api(Enregistrer|Annuler|Ajuster|Ajouter|Transferer|Synchroniser)/;
+function viderCache(){ Object.keys(CACHE).forEach(k => delete CACHE[k]); Object.keys(META).forEach(k => delete META[k]); }
+function cleCourante(){
+  switch (S.vue) {
+    case 'articles': return 'articles';
+    case 'tiers': return 'tiers';
+    case 'achats': return 'achats';
+    case 'caisse': return C.onglet === 'historique' ? 'ventes:' + C.jour : 'caisse';
+    case 'depenses': return 'depenses:' + D.mois;
+    case 'stock': return 'stock';
+    case 'impayes': return 'impayes:' + I.type;
+    case 'accueil': return 'tb:' + B.du + ':' + B.au;
+  }
+  return '';
+}
+/** L'utilisateur est-il en train de saisir ? (on ne redessine pas sous ses doigts) */
+function libre(){
+  if ($('modale-zone').innerHTML) return false;
+  const a = document.activeElement;
+  return !(a && $('vue').contains(a) && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName));
+}
+async function charger(cle, appel, afficherDonnees, titre, actif){
+  actif = actif || (() => cleCourante() === cle);
+  META[cle] = { appel: appel, afficher: afficherDonnees, actif: actif };
+  const ancien = CACHE[cle];
+  if (ancien) afficherDonnees(ancien, false);
+  else if (titre) $('vue').innerHTML = '<h2>' + titre + '</h2><div class="bloc vide">Chargement…</div>';
+  const jeton = S.token;
+  let frais;
+  try { frais = await appel(); } catch(e) {
+    if (!ancien && jeton === S.token) {
+      if (e.horsLigne && titre && actif()) $('vue').innerHTML = '<h2>' + titre + '</h2><div class="bloc">' + etatVide('horsligne', 'Pas de connexion internet',
+        msgErreur(e), '<button class="btn orange" onclick="allerA(\'caisse\')">Aller à la caisse</button>') + '</div>';
+      else toast(msgErreur(e), true);
+    }
+    return;
+  }
+  if (jeton !== S.token) return;
+  const change = !ancien || JSON.stringify(frais) !== JSON.stringify(ancien);
+  CACHE[cle] = frais;
+  if (cle === 'caisse' && S.user) ecrireL('mmc_caisse_' + S.user.code, frais);
+  if (actif() && (!ancien || change)) afficherDonnees(frais, !!ancien);
+}
+/** Après un enregistrement : les autres écrans seront rechargés, l'écran courant est rafraîchi en arrière-plan. */
+function apresEcriture(){
+  const jeton = S.token;
+  Object.keys(CACHE).forEach(k => delete CACHE[k]);
+  setTimeout(() => Object.keys(META).forEach(k => {
+    const m = META[k];
+    if (!m.actif()) return;
+    m.appel().then(d => { if (jeton !== S.token) return; CACHE[k] = d; if (m.actif()) m.afficher(d, true); }).catch(() => {});
+  }), 30);
+}
+/** Juste après la connexion : on prépare les écrans principaux pour qu'ils s'ouvrent instantanément. */
+function prechargement(){
+  if (!navigator.onLine || HL.local) return;
+  const jeton = S.token, g = S.user.fonction === 'Gérant';
+  const jour = aujourdhui(), mois = jour.slice(0, 7);
+  const l = [['articles', () => api('apiArticles', jeton)], ['stock', () => api('apiStock', jeton)],
+             ['tiers', () => api('apiTiers', jeton)], ['impayes:Client', () => api('apiImpayes', jeton, 'Client')],
+             ['depenses:' + mois, () => api('apiDepenses', jeton, mois)], ['ventes:' + jour, () => api('apiVentes', jeton, jour)]];
+  if (g) l.push(['achats', () => api('apiAchats', jeton)], ['tb:' + mois + '-01:' + jour, () => api('apiTableauBord', jeton, mois + '-01', jour)]);
+  l.forEach((x, i) => setTimeout(() => {
+    if (jeton !== S.token || CACHE[x[0]]) return;
+    x[1]().then(d => { if (jeton === S.token && !CACHE[x[0]]) CACHE[x[0]] = d; }).catch(() => {});
+  }, 400 + i * 150));
+}
+
+
+/* ===== Hors ligne : connexion locale, ventes en attente, envoi automatique ===== */
+function reseau(etat){
+  const avant = HL.en;
+  HL.en = etat;
+  majReseau();
+  if (etat && !avant) setTimeout(() => synchroniser(), 800);
+}
+window.addEventListener('online', () => { HL.en = true; majReseau(); setTimeout(() => synchroniser(), 1500); });
+window.addEventListener('offline', () => { HL.en = false; majReseau(); });
+setInterval(() => { if (S.user) synchroniser(); }, 60000);
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); HL.install = e; majReseau(); });
+if (!MODE_GAS && 'serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+
+function enLigne(){ return navigator.onLine && HL.en; }
+function attente(){ return lireL('mmc_attente', []); }
+
+function majReseau(){
+  const z = $('etat-reseau');
+  if (z) {
+    const n = attente().length, en = enLigne();
+    z.className = 'reseau ' + (!en ? 'hl' : HL.local ? 'att' : 'ok');
+    z.innerHTML = '<i></i><span>' + (!en ? 'Hors ligne' : HL.envoi ? 'Envoi…' : HL.local ? 'Reconnexion requise' : 'En ligne') + '</span>' +
+      (n ? '<b>' + n + ' en attente</b>' : '');
+    z.title = !en ? 'Pas d\'internet : la caisse continue, les ventes seront envoyées au retour de la connexion.' : 'Connecté';
+  }
+  const b = $('btn-installer');
+  if (b) b.classList.toggle('cache', !HL.install);
+}
+
+async function installerApp(){
+  if (!HL.install) return;
+  HL.install.prompt();
+  try { await HL.install.userChoice; } catch(e) {}
+  HL.install = null; majReseau();
+}
+
+/* --- connexion sans internet (comptes déjà connectés sur cet appareil) --- */
+async function empreintePin(pin, sel){
+  const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(String(pin)), 'PBKDF2', false, ['deriveBits']);
+  const b = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: new TextEncoder().encode(sel), iterations: 150000, hash: 'SHA-256' }, k, 256);
+  return Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
+}
+async function memoriserPin(user, pin){
+  if (MODE_GAS || !(window.crypto && crypto.subtle)) return;
+  try {
+    const sel = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(x => x.toString(16).padStart(2, '0')).join('');
+    const tous = lireL('mmc_pins', {});
+    tous[user.code] = { sel: sel, h: await empreintePin(pin, sel), user: user, t: Date.now() };
+    ecrireL('mmc_pins', tous);
+  } catch(e) {}
+}
+async function connexionLocale(code, pin){
+  const v = lireL('mmc_pins', {})[code];
+  if (!v || Date.now() - v.t > 30 * 86400000) throw new Error('Pas de connexion internet. Ce compte ne s\'est pas connecté sur cet appareil depuis 30 jours : il faut internet pour la première connexion.');
+  const essais = lireL('mmc_essais', {}), e = essais[code] || { n: 0, t: 0 };
+  if (e.n >= 5 && Date.now() - e.t < 300000) throw new Error('Trop d\'essais. Réessayez dans 5 minutes.');
+  if (await empreintePin(pin, v.sel) !== v.h) {
+    essais[code] = { n: (Date.now() - e.t < 300000 ? e.n : 0) + 1, t: Date.now() }; ecrireL('mmc_essais', essais);
+    throw new Error('Code PIN incorrect.');
+  }
+  delete essais[code]; ecrireL('mmc_essais', essais);
+  const moi = lireL('mmc_moi', null);
+  S.user = v.user; S.token = moi && moi.user && moi.user.code === code ? moi.token : null;
+  HL.local = !S.token;
+  ouvrirApp();
+  toast('Connexion hors ligne : la caisse fonctionne, les ventes seront envoyées au retour d\'internet.');
+}
+
+function reconnecter(){
+  if (!S.user) return;
+  modale('Reconnexion',
+    aide('Internet est revenu. Tapez votre code PIN pour envoyer les ventes faites hors ligne et retrouver tous les écrans.') +
+    '<label>Code PIN de ' + esc(S.user.nom) + '</label><input id="rc-pin" type="password" inputmode="numeric" maxlength="6">',
+    async () => {
+      HL.local = false;
+      try {
+        const pin = $('rc-pin').value, r = await api('apiConnexion', S.user.code, pin);
+        S.token = r.token; S.user = r.utilisateur; ecrireToken(r.token); ecrireL('mmc_moi', { token: r.token, user: r.utilisateur });
+        memoriserPin(r.utilisateur, pin);
+      } catch(e) { if (!S.token) HL.local = true; throw e; }
+      majReseau(); toast('Reconnecté'); synchroniser(true);
+    });
+}
+
+/* --- ventes faites hors ligne --- */
+function nouvelId(){
+  try { return crypto.randomUUID(); } catch(e) {}
+  return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
+}
+function numeroProvisoire(){
+  let poste = lireL('mmc_poste', null);
+  if (!poste) { poste = 'P' + Math.random().toString(36).slice(2, 5).toUpperCase(); ecrireL('mmc_poste', poste); }
+  const n = (lireL('mmc_seq', 0) || 0) + 1; ecrireL('mmc_seq', n);
+  return 'HL-' + poste + '-' + String(n).padStart(4, '0');
+}
+function dateHeure(d){
+  const p = n => String(n).padStart(2, '0');
+  return p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+
+/** Enregistre la vente sur l'appareil (mêmes contrôles que le serveur) et prépare une facture provisoire. */
+function venteHorsLigne(v){
+  const d = C.data, g = S.user.fonction === 'Gérant', besoin = {};
+  let total = 0;
+  const lignes = v.lignes.map((l, i) => {
+    const a = d.articles.find(x => x.code === l.article), q = numVal(l.qte);
+    if (!a) throw new Error('Ligne ' + (i + 1) + ' : article introuvable.');
+    if (q <= 0) throw new Error('Ligne ' + (i + 1) + ' : la quantité doit être supérieure à 0.');
+    const pu = g ? numVal(l.pu) : a.prix, m = Math.round(q * pu);
+    besoin[a.code] = (besoin[a.code] || 0) + q; total += m;
+    return { designation: a.designation, quantite: q, prixUnitaire: pu, montant: m };
+  });
+  Object.keys(besoin).forEach(c => {
+    const a = d.articles.find(x => x.code === c);
+    if (besoin[c] > a.stock) throw new Error('Stock insuffisant au magasin pour « ' + a.designation + ' » : ' + a.stock + ' disponible(s).');
+  });
+  const remise = numVal(v.remise);
+  if (remise > 0 && !g) throw new Error('Seul le gérant peut accorder une remise.');
+  if (remise > total) throw new Error('La remise dépasse le total.');
+  const net = total - remise, verse = String(v.verse == null ? '' : v.verse).trim() === '' ? null : numVal(v.verse);
+  const paye = verse === null ? net : Math.min(verse, net);
+  const client = v.client ? (d.clients || []).find(c => c.code === v.client) : null;
+  if (paye < net && !client) throw new Error('Vente à crédit : choisissez le client (il doit avoir une fiche).');
+  const maintenant = new Date(), num = numeroProvisoire();
+  v.numeroProvisoire = num;
+  const f = { entreprise: d.entreprise || { nom: (S.etat && S.etat.entreprise) || 'MAGASIN MOINS CHER', devise: 'FCFA' },
+    numero: num, date: dateHeure(maintenant), client: client ? client.nom : 'Client de passage', telephoneClient: client ? client.telephone : '',
+    caissier: S.user.nom, codeCaissier: S.user.code, mode: v.mode, statut: 'Validée',
+    total: total, remise: remise, net: net, paye: paye, reste: net - paye, lignes: lignes, horsLigne: true };
+  const file = attente();
+  file.push({ v: v, vendeur: S.user.code, vendeurNom: S.user.nom, date: maintenant.toISOString(), facture: f });
+  if (!ecrireL('mmc_attente', file)) throw new Error('Impossible d\'enregistrer la vente sur cet appareil (mémoire pleine).');
+  majReseau();
+  return { numero: num, facture: f, monnaie: verse !== null && verse > net ? verse - net : 0 };
+}
+
+/** Envoie les ventes en attente. Une vente déjà reçue n'est jamais enregistrée deux fois (identifiant unique). */
+async function synchroniser(manuel){
+  if (HL.envoi || !S.user) return;
+  const g = S.user.fonction === 'Gérant';
+  const lot = attente().filter(x => g || x.vendeur === S.user.code);
+  if (!lot.length) { if (manuel) toast('Aucune vente en attente.'); majReseau(); return; }
+  if (!navigator.onLine) { if (manuel) toast('Toujours pas d\'internet : les ventes partiront dès son retour.', true); return; }
+  if (HL.local || !S.token) { majReseau(); if (manuel) reconnecter(); return; }
+  HL.envoi = true; majReseau();
+  try {
+    const part = lot.slice(0, 50);
+    const r = await api('apiSynchroniserVentes', S.token, part.map(x => ({ v: x.v, vendeur: x.vendeur, date: x.date })));
+    const ok = {}, erreurs = {}, alertes = [];
+    r.resultats.forEach(x => {
+      if (x.ok) { ok[x.idLocal] = x.numero; (x.alertes || []).forEach(a => alertes.push(x.provisoire + ' → ' + x.numero + ' : ' + a)); }
+      else erreurs[x.idLocal] = x.erreur;
+    });
+    ecrireL('mmc_attente', attente().filter(x => !ok[x.v.idLocal]).map(x => erreurs[x.v.idLocal] ? Object.assign(x, { erreur: erreurs[x.v.idLocal] }) : x));
+    ecrireL('mmc_envoyees', lireL('mmc_envoyees', []).concat(part.filter(x => ok[x.v.idLocal]).map(x =>
+      ({ provisoire: x.v.numeroProvisoire, numero: ok[x.v.idLocal], date: x.facture.date, net: x.facture.net }))).slice(-100));
+    const n = Object.keys(ok).length, ne = Object.keys(erreurs).length;
+    if (n) toast(n + ' vente(s) faite(s) hors ligne envoyée(s)' + (ne ? ' — ' + ne + ' en erreur' : '') + '.', ne > 0);
+    else if (ne && manuel) toast(ne + ' vente(s) n\'ont pas pu être envoyées : voir la liste.', true);
+    if (alertes.length) afficherAlertes(alertes);
+    if (lot.length > part.length && n) setTimeout(() => synchroniser(), 500);
+  } catch(e) {
+    if (manuel && !e.horsLigne) toast(msgErreur(e), true);
+  } finally {
+    HL.envoi = false; majReseau();
+    if ($('liste-attente')) ouvrirAttente();
+  }
+}
+
+function afficherAlertes(alertes){
+  if ($('modale-zone').innerHTML) return toast(alertes.length + ' alerte(s) de stock : voir « en attente » en haut.', true);
+  $('modale-zone').innerHTML = '<div class="voile"><div class="modale"><h3>Ventes hors ligne envoyées — à vérifier</h3>' +
+    aide('Ces ventes ont été faites pendant la coupure alors qu\'un autre poste vendait aussi : le stock du magasin est devenu négatif. Comptez l\'article et corrigez le stock, ou faites un transfert.') +
+    '<ul style="padding-left:18px;line-height:1.5">' + alertes.map(a => '<li>' + esc(a) + '</li>').join('') + '</ul>' +
+    '<div class="actions"><button class="btn orange" onclick="fermerModale()">Compris</button></div></div></div>';
+}
+
+function ouvrirAttente(){
+  const file = attente(), env = lireL('mmc_envoyees', []).slice(-8).reverse(), g = S.user && S.user.fonction === 'Gérant';
+  const en = enLigne();
+  $('modale-zone').innerHTML = '<div class="voile"><div class="modale large"><h3>Ventes faites hors ligne</h3>' +
+    '<p style="margin:4px 0 12px">' + (en ? (HL.local ? '<b style="color:var(--orange)">Internet est revenu : reconnectez-vous pour envoyer les ventes.</b>'
+        : '<b style="color:var(--ok)">Connecté</b> — l\'envoi est automatique.') : '<b style="color:var(--err)">Hors ligne</b> — les ventes partiront automatiquement au retour d\'internet.') + '</p>' +
+    '<div id="liste-attente">' + (file.length
+      ? '<div style="overflow-x:auto"><table><thead><tr><th>N° provisoire</th><th>Date</th><th>Vendeur</th><th style="text-align:right">Montant</th><th></th></tr></thead><tbody>' +
+        file.map((x, i) => '<tr style="cursor:default"><td><b>' + esc(x.v.numeroProvisoire) + '</b>' +
+            (x.erreur ? '<br><small style="color:var(--err)">' + esc(x.erreur) + '</small>' : '') + '</td>' +
+          '<td style="white-space:nowrap">' + esc(x.facture.date) + '</td><td>' + esc(x.vendeurNom) + '</td>' +
+          '<td style="text-align:right;white-space:nowrap">' + fcfa(x.facture.net) + '</td>' +
+          '<td style="white-space:nowrap;text-align:right"><button class="btn second" onclick="revoirAttente(' + i + ')">Facture</button>' +
+            (g && x.erreur ? ' <button class="btn second" onclick="retirerAttente(' + i + ', this)">Retirer</button>' : '') + '</td></tr>').join('') +
+        '</tbody></table></div>'
+      : etatVide('bouclier', 'Aucune vente en attente', 'Tout est envoyé.', '', true)) + '</div>' +
+    (env.length ? '<p style="margin:16px 0 6px;font-weight:bold;color:var(--bleu)">Derniers envois</p><p style="margin:0;color:var(--gris);line-height:1.7">' +
+      env.map(x => esc(x.provisoire) + ' → <b style="color:var(--texte)">' + esc(x.numero) + '</b>').join('<br>') + '</p>' : '') +
+    '<div class="actions"><button class="btn second" onclick="fermerModale()">Fermer</button>' +
+      (file.length ? '<button class="btn orange" onclick="synchroniser(true)">' + (en && HL.local ? 'Se reconnecter et envoyer' : 'Envoyer maintenant') + '</button>' : '') +
+    '</div></div></div>';
+}
+function revoirAttente(i){ const x = attente()[i]; if (x) afficherFacture(x.facture, 0); }
+function retirerAttente(i, btn){
+  if (btn.dataset.ok !== '1') { btn.dataset.ok = '1'; btn.textContent = 'Confirmer ?'; return; }
+  const f = attente(); f.splice(i, 1); ecrireL('mmc_attente', f); majReseau(); ouvrirAttente();
+}
+
+/* ===== Aide intégrée : icônes, aides, écrans vides, astuces ===== */
+const ICO = {
+  panier: '<path d="M3 4h2l2.4 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/>',
+  boite: '<path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/>',
+  personnes: '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.6c3 .1 5.5 2 5.5 5.4"/>',
+  recu: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+  portefeuille: '<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M16 14.5h2"/>',
+  camion: '<path d="M2 6h11v10H2zM13 9h4l3 3v4h-7z"/><circle cx="6" cy="17.5" r="1.6"/><circle cx="16.5" cy="17.5" r="1.6"/>',
+  lots: '<path d="M12 3 2 8l10 5 10-5z"/><path d="m2 13 10 5 10-5"/>',
+  graphe: '<path d="M4 20V11M10 20V5M16 20v-6M2 20h20"/>',
+  inventaire: '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h3"/>',
+  cle: '<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l2 2M15 8l2 2"/>',
+  imprimante: '<path d="M6 9V3h12v6M6 18H4v-7h16v7h-2"/><rect x="6" y="14" width="12" height="7"/>',
+  ampoule: '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.7.5 1 1.2 1 2.1h5c0-.9.3-1.6 1-2.1A6 6 0 0 0 12 3z"/>',
+  etiquette: '<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.3"/>',
+  bouclier: '<path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  horsligne: '<path d="M3 3l18 18"/><path d="M6.3 8.4A5 5 0 0 0 7 18h10.6M20.4 15.6A3.6 3.6 0 0 0 17 11h-.4a6 6 0 0 0-7.2-4.6"/>',
+  entrepot: '<path d="M3 21V9l9-5 9 5v12"/><path d="M7 21v-8h10v8M7 17h10"/>',
+  fleches: '<path d="M4 8h15l-3.5-3.5M20 16H5l3.5 3.5"/>'
+};
+const MAG = 'MAG';
+function ico(n, t, c){ return '<svg width="' + (t || 24) + '" height="' + (t || 24) + '" viewBox="0 0 24 24" fill="none" stroke="' + (c || 'currentColor') +
+  '" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICO[n] + '</svg>'; }
+function aide(t){ return '<p class="aide"><span>' + t + '</span></p>'; }
+function info(t){ return '<span class="info" tabindex="0" role="note" aria-label="' + esc(t) + '" data-tip="' + esc(t) + '" ' +
+  'onclick="event.preventDefault();event.stopPropagation();this.classList.toggle(\'ouvert\')">i</span>'; }
+function etatVide(icone, titre, texte, bouton, petit){
+  return '<div class="etat-vide' + (petit ? ' petit' : '') + '"><div class="ico">' + ico(icone, petit ? 24 : 30, 'var(--bleu2)') + '</div><b>' + titre + '</b>' +
+    (texte ? '<p>' + texte + '</p>' : '') + (bouton || '') + '</div>';
+}
+const ASTUCES_VUES = {};
+function cleAstuce(cle){ return 'mmc_astuce_' + (S.user ? S.user.code : '') + '_' + cle; }
+function astuce(cle, html){
+  const k = cleAstuce(cle);
+  if (ASTUCES_VUES[k]) return '';
+  try { if (localStorage.getItem(k)) return ''; } catch(e) {}
+  return '<div class="astuce" id="ast-' + cle + '"><span class="ampoule">' + ico('ampoule', 17, '#fff') + '</span><div>' + html + '</div>' +
+    '<button title="Masquer cette astuce" aria-label="Masquer cette astuce" onclick="masquerAstuce(\'' + cle + '\')">×</button></div>';
+}
+function masquerAstuce(cle){
+  const k = cleAstuce(cle); ASTUCES_VUES[k] = 1;
+  try { localStorage.setItem(k, '1'); } catch(e) {}
+  const e = $('ast-' + cle); if (e) e.remove();
+}
+function reafficherAstuces(){
+  Object.keys(ASTUCES_VUES).forEach(k => delete ASTUCES_VUES[k]);
+  try { Object.keys(localStorage).filter(k => k.indexOf(cleAstuce('')) === 0).forEach(k => localStorage.removeItem(k)); } catch(e) {}
+  toast('Les astuces s\'afficheront à nouveau');
+}
+document.addEventListener('click', () => document.querySelectorAll('.info.ouvert').forEach(x => x.classList.remove('ouvert')));
+['mouseover', 'focusin', 'touchstart'].forEach(ev => document.addEventListener(ev, e => {
+  const i = e.target.closest && e.target.closest('.info'); if (!i) return;
+  const c = i.closest('.modale,.bloc,main') || document.body, r = i.getBoundingClientRect(), b = c.getBoundingClientRect();
+  i.classList.toggle('g', r.left + 255 > Math.min(b.right, window.innerWidth));
+}, { passive: true }));
+
+function afficher(ecran){
+  ['chargement','installation','connexion','app'].forEach(n => $('ecran-' + n).classList.toggle('cache', n !== ecran));
+}
+
+function toast(texte, erreur){
+  const z = $('toast-zone');
+  z.innerHTML = '<div class="toast' + (erreur ? ' err' : '') + '">' + esc(texte) + '</div>';
+  clearTimeout(toast._t); toast._t = setTimeout(() => z.innerHTML = '', 3200);
+}
+
+async function occupe(btn, fn){
+  if (btn) btn.disabled = true;
+  try { await fn(); } finally { if (btn) btn.disabled = false; }
+}
+
+/* ===== Démarrage ===== */
+async function demarrer(){
+  try {
+    try { S.etat = await api('apiEtat'); ecrireL('mmc_etat', S.etat); }
+    catch(e) { if (!e.horsLigne || !(S.etat = lireL('mmc_etat', null))) throw e; }
+    document.querySelectorAll('.nom-ent').forEach(e => e.textContent = S.etat.entreprise);
+    if (S.etat.premierLancement) return afficher('installation');
+    const t = lireToken(), moi = lireL('mmc_moi', null);
+    if (t) {
+      try { S.user = await api('apiMoi', t); S.token = t; return ouvrirApp(); }
+      catch(e) {
+        if (e.horsLigne && moi && moi.token === t) { S.user = moi.user; S.token = t; return ouvrirApp(); }
+        ecrireToken(null);
+      }
+    }
+    ecranConnexion();
+  } catch(e) {
+    $('ecran-chargement').innerHTML = '<p style="color:var(--err);max-width:420px;text-align:center;line-height:1.5">' + (e.horsLigne
+      ? 'Pas de connexion internet. La toute première ouverture sur cet appareil a besoin d\'internet ; ensuite, la caisse fonctionnera même hors ligne.'
+      : 'Impossible de charger : ' + esc(msgErreur(e))) + '</p>';
+  }
+}
+
+function ecranConnexion(){
+  S.choixUser = null;
+  $('con-pin').value = ''; $('con-msg').textContent = '';
+  $('liste-users').innerHTML = S.etat.utilisateurs.map(u =>
+    '<button class="user" data-code="' + esc(u.code) + '" onclick="choisirUser(this)">' +
+    '<span>' + esc(u.nom) + '</span><small>' + esc(u.fonction) + '</small></button>').join('');
+  afficher('connexion');
+}
+
+function choisirUser(b){
+  document.querySelectorAll('.user').forEach(x => x.classList.remove('actif'));
+  b.classList.add('actif'); S.choixUser = b.dataset.code; $('con-pin').focus();
+  if (!navigator.onLine) $('con-msg').textContent = 'Hors ligne : seuls les comptes déjà connectés sur cet appareil peuvent entrer.';
+}
+
+async function creerGerant(btn){
+  const nom = $('ins-nom').value.trim(), p1 = $('ins-pin').value, p2 = $('ins-pin2').value;
+  $('ins-msg').textContent = '';
+  if (p1 !== p2) { $('ins-msg').textContent = 'Les deux codes PIN ne sont pas identiques.'; return; }
+  await occupe(btn, async () => {
+    try { const r = await api('apiCreerGerant', nom, p1); entrer(r); }
+    catch(e) { $('ins-msg').textContent = msgErreur(e); }
+  });
+}
+
+async function connexion(btn){
+  $('con-msg').textContent = '';
+  if (!S.choixUser) { $('con-msg').textContent = 'Choisissez votre nom.'; return; }
+  const pin = $('con-pin').value;
+  await occupe(btn, async () => {
+    try { const r = await api('apiConnexion', S.choixUser, pin); entrer(r); memoriserPin(r.utilisateur, pin); }
+    catch(e) {
+      if (e.horsLigne && !MODE_GAS) {
+        try { await connexionLocale(S.choixUser, pin); return; } catch(e2) { e = e2; }
+      }
+      $('con-msg').textContent = msgErreur(e); $('con-pin').value = '';
+    }
+  });
+}
+
+function entrer(r){ S.token = r.token; S.user = r.utilisateur; HL.local = false; ecrireToken(r.token);
+  if (!MODE_GAS) ecrireL('mmc_moi', { token: r.token, user: r.utilisateur });
+  ouvrirApp(); }
+
+async function deconnexion(){
+  const t = S.token; ecrireL('mmc_moi', null); finSession();
+  try { await api('apiDeconnexion', t); } catch(e) {}
+}
+
+async function finSession(){
+  S.token = null; S.user = null; S.data = null; HL.local = false; ecrireToken(null);
+  reinitialiserEcrans();
+  viderCache();
+  try { S.etat = await api('apiEtat'); } catch(e) {}
+  ecranConnexion();
+}
+
+/* ===== Application ===== */
+/** Remet chaque écran dans son état de départ (changement d'utilisateur sur le même poste). */
+function reinitialiserEcrans(){
+  S.vue = 'accueil'; S.onglet = 'entreprise';
+  Object.assign(A, { data: null, recherche: '', famille: '' });
+  Object.assign(T, { data: null, type: 'Client', recherche: '' });
+  Object.assign(H, { data: null, recherche: '', lignes: [] });
+  Object.assign(C, { data: null, panier: [], onglet: 'vente', sugg: [], sel: 0, jour: null, client: '', facture: null, ajout: null });
+  Object.assign(D, { data: null, mois: null, categorie: '' });
+  Object.assign(K, { data: null, recherche: '', famille: '', bas: false, mode: 'article', tri: 'ancien', depot: '', mvt: null, tr: null });
+  Object.assign(I, { data: null, type: 'Client', recu: null, recherche: '' });
+  Object.assign(B, { data: null, du: null, au: null });
+  fermerModale();
+}
+
+function ouvrirApp(){
+  $('qui-nom').textContent = S.user.nom;
+  $('qui-fonction').textContent = S.user.fonction;
+  afficher('app');
+  if (!CACHE.caisse) { const c = lireL('mmc_caisse_' + S.user.code, null); if (c) CACHE.caisse = c; }
+  allerA('caisse');
+  prechargement();
+  majReseau();
+  setTimeout(() => synchroniser(), 1200);
+}
+
+function dessinerMenu(){
+  $('menu').innerHTML = MODULES
+    .filter(m => !m.gerant || S.user.fonction === 'Gérant')
+    .map(m => '<button class="' + (m.id === S.vue ? 'actif' : '') + '" onclick="allerA(\'' + m.id + '\')">' +
+              esc(m.nom) + '<span class="etape">' + (m.pret ? '' : 'étape ' + m.etape) + '</span></button>')
+    .join('');
+}
+
+function allerA(id){
+  S.vue = id; dessinerMenu();
+  if (id === 'parametres') return vueParametres();
+  if (id === 'articles') return vueArticles();
+  if (id === 'tiers') return vueTiers();
+  if (id === 'achats') return vueAchats();
+  if (id === 'caisse') return vueCaisse();
+  if (id === 'depenses') return vueDepenses();
+  if (id === 'stock') return vueStock();
+  if (id === 'impayes') return vueImpayes();
+  if (id === 'accueil') return vueTableauBord();
+  if (id === 'aide') return vueAide();
+  const m = MODULES.find(x => x.id === id);
+  $('vue').innerHTML = '<h2>' + esc(m.nom) + '</h2><div class="bloc bientot"><b>Module en préparation</b>' +
+                       'Il sera ajouté à l\'étape ' + m.etape + '.</div>';
+}
+
+/* ===== Paramètres ===== */
+async function vueParametres(recharger){
+  if (!S.data || recharger) {
+    $('vue').innerHTML = '<h2>Paramètres</h2><div class="bloc vide">Chargement…</div>';
+    try { S.data = await api('apiParametres', S.token); } catch(e) { return toast(msgErreur(e), true); }
+  }
+  const o = [['entreprise','Entreprise'],['familles','Familles d\'articles'],['depots','Dépôts'],['personnel','Personnel']];
+  $('vue').innerHTML = '<h2>Paramètres</h2><div class="onglets">' +
+    o.map(x => '<button class="' + (S.onglet === x[0] ? 'actif' : '') + '" onclick="S.onglet=\'' + x[0] + '\';vueParametres()">' + x[1] + '</button>').join('') +
+    '</div><div class="bloc" id="contenu-param"></div>';
+  ({ entreprise: ongletEntreprise, familles: ongletFamilles, depots: ongletDepots, personnel: ongletPersonnel })[S.onglet]();
+}
+
+function ongletEntreprise(){
+  const champs = S.data.params.map(p => {
+    const attrs = p.cle === 'SEUIL_DEFAUT' ? ' inputmode="numeric"' : '';
+    const ctrl = p.cle === 'DEVISE'
+      ? '<select data-cle="DEVISE">' + ['FCFA','EUR','USD'].map(d => '<option' + (d === p.valeur ? ' selected' : '') + '>' + d + '</option>').join('') + '</select>'
+      : '<input data-cle="' + esc(p.cle) + '" value="' + esc(p.valeur) + '"' + attrs + '>';
+    return '<div><label>' + esc(p.libelle) + '</label>' + ctrl + '</div>';
+  }).join('');
+  $('contenu-param').innerHTML = '<div class="grille">' + champs + '</div>' +
+    '<div class="actions"><button class="btn" onclick="enregistrerEntreprise(this)">Enregistrer</button></div>';
+}
+
+async function enregistrerEntreprise(btn){
+  const v = {};
+  document.querySelectorAll('#contenu-param [data-cle]').forEach(e => v[e.dataset.cle] = e.value);
+  await occupe(btn, async () => {
+    try {
+      S.data = await api('apiEnregistrerParametres', S.token, v);
+      document.querySelectorAll('.nom-ent').forEach(e => e.textContent = v.ENT_NOM);
+      toast('Paramètres enregistrés');
+    } catch(e) { toast(msgErreur(e), true); }
+  });
+}
+
+function ongletFamilles(){
+  const l = S.data.familles;
+  $('contenu-param').innerHTML =
+    '<div class="entete-bloc"><span style="color:var(--gris)">' + l.length + ' famille(s)</span>' +
+    '<button class="btn orange" onclick="ficheFamille()">+ Ajouter une famille</button></div>' +
+    (l.length ? '<table><thead><tr><th>Code</th><th>Famille</th><th class="col-mobile-cache">Description</th><th>Actif</th></tr></thead><tbody>' +
+      l.map(f => '<tr onclick="ficheFamille(\'' + esc(f.code) + '\')"><td>' + esc(f.code) + '</td><td><b>' + esc(f.famille) + '</b></td>' +
+        '<td class="col-mobile-cache">' + esc(f.description) + '</td><td>' + badge(f.actif) + '</td></tr>').join('') +
+      '</tbody></table>' : '<div class="vide">Aucune famille.</div>');
+}
+
+function ficheFamille(code){
+  const f = S.data.familles.find(x => x.code === code) || { code: '', famille: '', description: '', actif: 'Oui' };
+  modale(code ? 'Modifier la famille ' + code : 'Nouvelle famille',
+    '<label>Nom de la famille</label><input id="f-nom" value="' + esc(f.famille) + '">' +
+    '<label>Description</label><input id="f-desc" value="' + esc(f.description) + '">' +
+    '<label>Active</label>' + selectOuiNon('f-actif', f.actif),
+    async () => {
+      S.data = await api('apiEnregistrerFamille', S.token,
+        { code: f.code, famille: $('f-nom').value, description: $('f-desc').value, actif: $('f-actif').value });
+      toast('Famille enregistrée'); vueParametres();
+    });
+}
+
+function ongletDepots(){
+  const l = S.data.depots || [];
+  $('contenu-param').innerHTML =
+    aide('Le <b>magasin</b> est le point de vente : on ne vend que depuis lui. Les autres dépôts gardent la marchandise ; '
+      + 'pour la vendre, on la fait venir au magasin avec un <b>transfert</b> (Stock & inventaire).') +
+    '<div class="entete-bloc" style="margin-top:12px"><span style="color:var(--gris)">' + l.length + ' emplacement(s)</span>' +
+    '<button class="btn orange" onclick="ficheDepot()">+ Ajouter un dépôt</button></div>' +
+    '<table><thead><tr><th>Code</th><th>Nom</th><th class="col-mobile-cache">Description</th><th>Actif</th></tr></thead><tbody>' +
+    l.map(x => '<tr onclick="ficheDepot(\'' + esc(x.code) + '\')"><td>' + esc(x.code) + '</td><td><b>' + esc(x.nom) + '</b>' +
+      (x.code === MAG ? '<span class="mag-tag">Point de vente</span>' : '') + '</td>' +
+      '<td class="col-mobile-cache">' + esc(x.description) + '</td><td>' + badge(x.actif) + '</td></tr>').join('') +
+    '</tbody></table>';
+}
+
+function ficheDepot(code){
+  const x = (S.data.depots || []).find(d => d.code === code) || { code: '', nom: '', description: '', actif: 'Oui' };
+  modale(code ? 'Modifier ' + (x.code === MAG ? 'le magasin' : 'le dépôt ' + code) : 'Nouveau dépôt',
+    '<label>Nom</label><input id="dp-nom" value="' + esc(x.nom) + '" placeholder="Ex. : Dépôt derrière la boutique">' +
+    '<label>Description / adresse (facultatif)</label><input id="dp-desc" value="' + esc(x.description) + '">' +
+    (x.code === MAG ? aide('Le magasin est le point de vente : il peut être renommé, mais pas désactivé.')
+      : '<label>Actif</label>' + selectOuiNon('dp-actif', x.actif) + (code ? aide('Un dépôt ne peut être désactivé que lorsqu\'il est vide.') : '')),
+    async () => {
+      S.data = await api('apiEnregistrerDepot', S.token, { code: x.code, nom: $('dp-nom').value, description: $('dp-desc').value,
+        actif: $('dp-actif') ? $('dp-actif').value : 'Oui' });
+      toast('Dépôt enregistré'); vueParametres();
+    });
+}
+
+function ongletPersonnel(){
+  const l = S.data.personnel;
+  $('contenu-param').innerHTML =
+    '<div class="entete-bloc"><span style="color:var(--gris)">' + l.length + ' employé(s)</span>' +
+    '<button class="btn orange" onclick="fichePersonne()">+ Ajouter un employé</button></div>' +
+    '<table><thead><tr><th>Code</th><th>Nom</th><th>Fonction</th><th class="col-mobile-cache">Entrée</th><th>Actif</th></tr></thead><tbody>' +
+    l.map(p => '<tr onclick="fichePersonne(\'' + esc(p.code) + '\')"><td>' + esc(p.code) + '</td><td><b>' + esc(p.nom) + '</b></td>' +
+      '<td>' + esc(p.fonction) + '</td><td class="col-mobile-cache">' + esc(p.dateEntree) + '</td><td>' + badge(p.actif) + '</td></tr>').join('') +
+    '</tbody></table>';
+}
+
+function fichePersonne(code){
+  const p = S.data.personnel.find(x => x.code === code) || { code: '', nom: '', fonction: 'Caissière', actif: 'Oui' };
+  modale(code ? 'Modifier ' + code : 'Nouvel employé',
+    '<label>Nom et prénom</label><input id="p-nom" value="' + esc(p.nom) + '">' +
+    '<label>Fonction</label><select id="p-fonction">' +
+      S.data.fonctions.map(f => '<option' + (f === p.fonction ? ' selected' : '') + '>' + esc(f) + '</option>').join('') + '</select>' +
+    '<label>Actif</label>' + selectOuiNon('p-actif', p.actif) +
+    '<label>' + (code ? 'Nouveau code PIN (laisser vide pour ne pas changer)' : 'Code PIN (4 à 6 chiffres)') + '</label>' +
+    '<input id="p-pin" class="pin" type="password" inputmode="numeric" maxlength="6">' +
+    aide('Code secret de 4 à 6 chiffres. Personne ne peut le relire : en cas d\'oubli, tapez simplement un nouveau code.'),
+    async () => {
+      S.data = await api('apiEnregistrerPersonne', S.token,
+        { code: p.code, nom: $('p-nom').value, fonction: $('p-fonction').value, actif: $('p-actif').value, pin: $('p-pin').value });
+      S.etat = await api('apiEtat');
+      toast('Employé enregistré'); vueParametres();
+    });
+}
+
+function badge(v){ return '<span class="badge ' + (v === 'Oui' ? 'oui' : 'non') + '">' + esc(v) + '</span>'; }
+function selectOuiNon(id, v){
+  return '<select id="' + id + '">' + ['Oui','Non'].map(x => '<option' + (x === v ? ' selected' : '') + '>' + x + '</option>').join('') + '</select>';
+}
+
+function modale(titre, html, surValider, large){
+  $('modale-zone').innerHTML = '<div class="voile"><div class="modale' + (large ? ' large' : '') + '"><h3>' + esc(titre) + '</h3>' + html +
+    '<div class="msg" id="mod-msg"></div><div class="actions"><button class="btn second" onclick="fermerModale()">Annuler</button>' +
+    '<button class="btn" id="mod-ok">Enregistrer</button></div></div></div>';
+  const ok = $('mod-ok');
+  ok.onclick = () => occupe(ok, async () => {
+    try { await surValider(); fermerModale(); } catch(e) { $('mod-msg').textContent = msgErreur(e); }
+  });
+}
+function fermerModale(){ $('modale-zone').innerHTML = ''; }
+
+
+/* ===== Étape 2 : Articles ===== */
+const A = { data: null, recherche: '', famille: '' };
+function fcfa(n){ return (Number(n) || 0).toLocaleString('fr-FR') + ' ' + ((A.data && A.data.devise) || 'FCFA'); }
+
+async function vueArticles(){
+  await charger('articles', () => api('apiArticles', S.token),
+    (d, maj) => { A.data = d; if (!maj || libre()) dessinerArticles(); }, 'Articles');
+}
+
+function dessinerArticles(){
+  const d = A.data, g = d.gerant;
+  $('vue').innerHTML = '<h2>Articles</h2><div class="bloc">' +
+    '<div class="entete-bloc" style="flex-wrap:wrap">' +
+      '<input placeholder="Rechercher un article…" style="max-width:280px" value="' + esc(A.recherche) + '" oninput="A.recherche=this.value;listeArticles()">' +
+      '<select style="max-width:210px" onchange="A.famille=this.value;listeArticles()"><option value="">Toutes les familles</option>' +
+        d.familles.map(f => '<option' + (f === A.famille ? ' selected' : '') + '>' + esc(f) + '</option>').join('') + '</select>' +
+      '<span style="flex:1"></span>' +
+      (g ? '<button class="btn orange" onclick="ficheArticle()">+ Ajouter un article</button>' : '') +
+    '</div><div id="a-liste"></div></div>';
+  listeArticles();
+}
+
+function listeArticles(){
+  const d = A.data, g = d.gerant, r = A.recherche.trim().toLowerCase();
+  const l = d.articles.filter(a => (!A.famille || a.famille === A.famille) &&
+    (!r || a.designation.toLowerCase().indexOf(r) >= 0 || a.code.toLowerCase().indexOf(r) >= 0));
+  if (!l.length) {
+    $('a-liste').innerHTML = d.articles.length
+      ? etatVide('boite', 'Aucun article ne correspond', 'Essayez un autre mot ou une autre famille.')
+      : etatVide('boite', 'Aucun article pour le moment', g ? 'Créez vos articles un par un. Chaque taille ou modèle est un article séparé, avec son prix et son stock.' : 'Le gérant n\'a pas encore créé d\'articles.',
+          g ? '<button class="btn orange" onclick="ficheArticle()">+ Ajouter un article</button>' : '');
+    return;
+  }
+  const alertes = l.filter(a => a.actif === 'Oui' && a.stock <= a.seuilEffectif).length;
+  $('a-liste').innerHTML =
+    '<p style="color:var(--gris);margin:0 0 10px">' + l.length + ' article(s)' +
+      (alertes ? ' · <b style="color:var(--err)">' + alertes + ' en stock bas</b>' : '') + '</p>' +
+    '<div style="overflow-x:auto"><table><thead><tr><th>Code</th><th>Désignation</th><th class="col-mobile-cache">Famille</th>' +
+    (g ? '<th class="col-mobile-cache">P. achat</th>' : '') + '<th>P. vente</th>' +
+    (g ? '<th class="col-mobile-cache">Marge</th>' : '') + '<th>Stock</th><th class="col-mobile-cache">Actif</th></tr></thead><tbody>' +
+    l.map(a => {
+      const bas = a.stock <= a.seuilEffectif;
+      return '<tr' + (g ? ' onclick="ficheArticle(\'' + esc(a.code) + '\')"' : ' style="cursor:default"') + '>' +
+        '<td>' + esc(a.code) + '</td><td><b>' + esc(a.designation) + '</b></td>' +
+        '<td class="col-mobile-cache">' + esc(a.famille) + '</td>' +
+        (g ? '<td class="col-mobile-cache">' + fcfa(a.prixAchat) + '</td>' : '') + '<td>' + fcfa(a.prixVente) + '</td>' +
+        (g ? '<td class="col-mobile-cache" style="color:' + (a.marge < 0 ? 'var(--err)' : 'var(--ok)') + '">' + fcfa(a.marge) + '</td>' : '') +
+        '<td><span class="badge ' + (bas ? 'non' : 'oui') + '">' + a.stock.toLocaleString('fr-FR') + ' ' + esc(a.unite.toLowerCase()) + '</span></td>' +
+        '<td class="col-mobile-cache">' + badge(a.actif) + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+}
+
+function ficheArticle(code){
+  const d = A.data;
+  if (!d.familles.length) return toast("Ajoutez d'abord une famille dans Paramètres.", true);
+  const a = d.articles.find(x => x.code === code) || { code: '', designation: '', famille: A.famille || d.familles[0],
+    unite: 'Pièce', prixAchat: '', prixVente: '', stockDepart: '', seuil: '', actif: 'Oui', depot: MAG };
+  const opt = (liste, v) => liste.map(x => '<option' + (x === v ? ' selected' : '') + '>' + esc(x) + '</option>').join('');
+  modale(code ? 'Modifier ' + code : 'Nouvel article',
+    '<label>Désignation</label><input id="a-des" value="' + esc(a.designation) + '" placeholder="Ex. : Matelas 2 places 20 cm">' +
+    '<div class="grille">' +
+      '<div><label>Famille</label><select id="a-famille">' + opt(d.familles, a.famille) + '</select></div>' +
+      '<div><label>Unité</label><select id="a-unite">' + opt(d.unites, a.unite) + '</select></div>' +
+      '<div><label>Prix d\'achat (' + esc(d.devise) + ')' + info('Mis à jour automatiquement à chaque achat si la case « Mettre à jour le prix d\'achat » est cochée.') + '</label><input id="a-pa" inputmode="decimal" value="' + esc(a.prixAchat) + '" oninput="calcMarge()"></div>' +
+      '<div><label>Prix de vente (' + esc(d.devise) + ')</label><input id="a-pv" inputmode="decimal" value="' + esc(a.prixVente) + '" oninput="calcMarge()"></div>' +
+      '<div><label>Stock de départ</label><input id="a-st" inputmode="decimal" value="' + esc(a.stockDepart) + '"></div>' +
+      '<div><label>Seuil d\'alerte' + info('Quand le stock descend à ce nombre, l\'article passe en rouge « stock bas ». Laissez vide pour utiliser le seuil par défaut des Paramètres.') + '</label><input id="a-seuil" inputmode="numeric" value="' + esc(a.seuil) + '" placeholder="Par défaut : ' + esc(d.seuilDefaut || 0) + '"></div>' +
+    '</div>' +
+    ((d.depots || []).length > 1 ? '<label>Où est rangé ce stock de départ ?</label><select id="a-depot">' +
+      d.depots.map(x => '<option value="' + esc(x.code) + '"' + (x.code === (a.depot || MAG) ? ' selected' : '') + '>' + esc(x.nom) + '</option>').join('') + '</select>' : '') +
+    aide('Le stock de départ est la quantité présente le jour de la création de l\'article' + ((d.depots || []).length > 1 ? ', à l\'endroit choisi' : '') +
+      '. Pour une nouvelle livraison, passez par <b>Achats & livraisons</b>.') +
+    '<label>Actif</label>' + selectOuiNon('a-actif', a.actif) +
+    '<p id="a-marge" style="margin:14px 0 0;font-weight:bold"></p>',
+    async () => {
+      A.data = await api('apiEnregistrerArticle', S.token, {
+        code: a.code, designation: $('a-des').value, famille: $('a-famille').value, unite: $('a-unite').value,
+        prixAchat: $('a-pa').value, prixVente: $('a-pv').value, stockDepart: $('a-st').value,
+        seuil: $('a-seuil').value, actif: $('a-actif').value, depot: $('a-depot') ? $('a-depot').value : (a.depot || MAG) });
+      toast('Article enregistré'); dessinerArticles();
+    });
+  calcMarge();
+}
+
+function calcMarge(){
+  const n = v => Number(String(v).replace(/\s/g, '').replace(',', '.')) || 0;
+  const m = n($('a-pv').value) - n($('a-pa').value);
+  const e = $('a-marge');
+  e.textContent = 'Marge par unité : ' + fcfa(m) + (m < 0 ? ' — attention, vente à perte !' : '');
+  e.style.color = m < 0 ? 'var(--err)' : 'var(--ok)';
+}
+
+
+/* ===== Étape 3 : Clients & fournisseurs ===== */
+const T = { data: null, type: 'Client', recherche: '' };
+
+async function vueTiers(){
+  await charger('tiers', () => api('apiTiers', S.token),
+    (d, maj) => { T.data = d; if (!d.gerant) T.type = 'Client'; if (!maj || libre()) dessinerTiers(); }, 'Clients & fournisseurs');
+}
+
+function dessinerTiers(){
+  const d = T.data;
+  const titre = d.gerant ? 'Clients & fournisseurs' : 'Clients';
+  const onglets = d.gerant ? '<div class="onglets">' + [['Client','Clients'],['Fournisseur','Fournisseurs']].map(o =>
+    '<button class="' + (T.type === o[0] ? 'actif' : '') + '" onclick="T.type=\'' + o[0] + '\';T.recherche=\'\';dessinerTiers()">' + o[1] +
+    ' (' + d.tiers.filter(t => t.type === o[0]).length + ')</button>').join('') + '</div>' : '';
+  $('vue').innerHTML = '<h2>' + titre + '</h2>' + onglets + '<div class="bloc">' +
+    '<div class="entete-bloc" style="flex-wrap:wrap">' +
+      '<input placeholder="Rechercher par nom ou téléphone…" style="max-width:300px" value="' + esc(T.recherche) + '" oninput="T.recherche=this.value;listeTiers()">' +
+      '<span style="flex:1"></span>' +
+      '<button class="btn orange" onclick="ficheTiers()">+ Ajouter un ' + T.type.toLowerCase() + '</button>' +
+    '</div><div id="t-liste"></div></div>';
+  listeTiers();
+}
+
+function listeTiers(){
+  const r = T.recherche.trim().toLowerCase();
+  const tous = T.data.tiers.filter(t => t.type === T.type);
+  const l = tous.filter(t => !r || t.nom.toLowerCase().indexOf(r) >= 0 ||
+    t.telephone.replace(/\s/g, '').indexOf(r.replace(/\s/g, '')) >= 0 || t.code.toLowerCase().indexOf(r) >= 0);
+  if (!l.length) {
+    $('t-liste').innerHTML = tous.length
+      ? etatVide('personnes', 'Aucun résultat', 'Vérifiez l\'orthographe ou cherchez par numéro de téléphone.')
+      : etatVide('personnes', 'Aucun ' + T.type.toLowerCase() + ' pour le moment',
+          T.type === 'Client' ? 'Une fiche client est nécessaire pour vendre à crédit. Vous pouvez aussi la créer directement depuis la caisse avec le bouton +.'
+                              : 'Enregistrez vos fournisseurs pour suivre vos achats et ce que vous leur devez.',
+          '<button class="btn orange" onclick="ficheTiers()">+ Ajouter un ' + T.type.toLowerCase() + '</button>');
+    return;
+  }
+  $('t-liste').innerHTML = '<div style="overflow-x:auto"><table><thead><tr><th>Code</th><th>Nom</th><th>Téléphone</th>' +
+    '<th class="col-mobile-cache">Adresse</th><th>' + (T.type === 'Client' ? 'Doit' : 'Dû') + '</th><th class="col-mobile-cache">Actif</th></tr></thead><tbody>' +
+    l.map(t => '<tr onclick="ficheTiers(\'' + esc(t.code) + '\')"><td>' + esc(t.code) + '</td><td><b>' + esc(t.nom) + '</b></td>' +
+      '<td>' + (t.telephone ? '<a href="tel:' + esc(t.telephone.replace(/\s/g, '')) + '" onclick="event.stopPropagation()">' + esc(t.telephone) + '</a>' : '') + '</td>' +
+      '<td class="col-mobile-cache">' + esc(t.adresse) + '</td>' +
+      '<td style="white-space:nowrap;color:' + (t.solde > 0 ? 'var(--err)' : 'var(--gris)') + '">' + (t.solde > 0 ? '<b>' + fcfa(t.solde) + '</b>' : '—') + '</td>' +
+      '<td class="col-mobile-cache">' + badge(t.actif) + '</td></tr>').join('') +
+    '</tbody></table></div>';
+}
+
+function ficheTiers(code){
+  const t = T.data.tiers.find(x => x.code === code) ||
+    { code: '', type: T.type, nom: '', telephone: '', adresse: '', notes: '', actif: 'Oui' };
+  const libelle = t.type.toLowerCase();
+  modale(code ? 'Modifier ' + code : 'Nouveau ' + libelle,
+    '<label>Nom ' + (t.type === 'Client' ? 'et prénom' : 'de l\'entreprise') + '</label><input id="t-nom" value="' + esc(t.nom) + '">' +
+    '<div class="grille">' +
+      '<div><label>Téléphone</label><input id="t-tel" type="tel" inputmode="tel" value="' + esc(t.telephone) + '"></div>' +
+      '<div><label>Actif</label>' + selectOuiNon('t-actif', t.actif) + '</div>' +
+    '</div>' +
+    '<label>Adresse / quartier / ville</label><input id="t-adr" value="' + esc(t.adresse) + '">' +
+    '<label>Notes</label><textarea id="t-notes" rows="2">' + esc(t.notes) + '</textarea>' +
+    (code && t.dateCreation ? '<p style="color:var(--gris);font-size:13px;margin:10px 0 0">Créé le ' + esc(t.dateCreation) + '</p>' : ''),
+    async () => {
+      T.data = await api('apiEnregistrerTiers', S.token, { code: t.code, type: t.type, nom: $('t-nom').value,
+        telephone: $('t-tel').value, adresse: $('t-adr').value, notes: $('t-notes').value, actif: $('t-actif').value });
+      toast((t.type === 'Client' ? 'Client' : 'Fournisseur') + ' enregistré'); dessinerTiers();
+    });
+}
+
+
+/* ===== Étape 4 : Achats & livraisons ===== */
+const H = { data: null, recherche: '', lignes: [] };
+function numVal(v){ return Number(String(v == null ? '' : v).replace(/\s/g, '').replace(',', '.')) || 0; }
+function aujourdhui(){ const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+
+async function vueAchats(){
+  await charger('achats', () => api('apiAchats', S.token),
+    (d, maj) => { H.data = d; if (!maj || libre()) dessinerAchats(); }, 'Achats & livraisons');
+}
+
+function dessinerAchats(){
+  const d = H.data, now = new Date();
+  const mois = String(now.getMonth() + 1).padStart(2, '0') + '/' + now.getFullYear();
+  const valides = d.achats.filter(a => a.statut !== 'Annulé');
+  const totalMois = valides.filter(a => a.date.slice(3) === mois).reduce((s, a) => s + a.total, 0);
+  const resteDu = valides.reduce((s, a) => s + a.reste, 0);
+  $('vue').innerHTML = '<h2>Achats & livraisons</h2>' +
+    '<div class="stats">' +
+      '<div class="stat"><small>Achats ce mois-ci</small><b>' + fcfa(totalMois) + '</b></div>' +
+      '<div class="stat"><small>Reste dû aux fournisseurs</small><b style="color:' + (resteDu ? 'var(--err)' : 'var(--ok)') + '">' + fcfa(resteDu) + '</b></div>' +
+      '<div class="stat"><small>Nombre d\'achats</small><b>' + valides.length + '</b></div>' +
+    '</div><div class="bloc">' +
+    '<div class="entete-bloc" style="flex-wrap:wrap">' +
+      '<input placeholder="Rechercher (n°, fournisseur, BL)…" style="max-width:300px" value="' + esc(H.recherche) + '" oninput="H.recherche=this.value;listeAchats()">' +
+      '<span style="flex:1"></span>' +
+      '<button class="btn orange" onclick="nouvelAchat()">+ Nouvel achat</button>' +
+    '</div><div id="h-liste"></div></div>';
+  listeAchats();
+}
+
+function listeAchats(){
+  const r = H.recherche.trim().toLowerCase();
+  const l = H.data.achats.filter(a => !r || (a.numero + ' ' + a.fournisseur + ' ' + a.refBL).toLowerCase().indexOf(r) >= 0);
+  if (!l.length) {
+    $('h-liste').innerHTML = H.data.achats.length
+      ? etatVide('camion', 'Aucun résultat', 'Cherchez par numéro, fournisseur ou bon de livraison.')
+      : etatVide('camion', 'Aucun achat enregistré', 'Chaque livraison reçue s\'enregistre ici : le stock augmente et un lot daté est créé.',
+          '<button class="btn orange" onclick="nouvelAchat()">+ Nouvel achat</button>');
+    return;
+  }
+  $('h-liste').innerHTML = '<div style="overflow-x:auto"><table><thead><tr><th>N°</th><th>Date</th><th>Fournisseur</th>' +
+    '<th class="col-mobile-cache">BL</th><th>Total</th><th class="col-mobile-cache">Payé</th><th>Reste</th><th class="col-mobile-cache">Statut</th></tr></thead><tbody>' +
+    l.map(a => '<tr onclick="detailAchat(\'' + esc(a.numero) + '\')"' + (a.statut === 'Annulé' ? ' style="opacity:.55"' : '') + '>' +
+      '<td>' + esc(a.numero) + '</td><td>' + esc(a.date) + '</td><td><b>' + esc(a.fournisseur) + '</b>' +
+        (a.depot && a.depot !== MAG ? '<br><small style="color:var(--gris)">→ ' + esc(a.depotNom) + '</small>' : '') + '</td>' +
+      '<td class="col-mobile-cache">' + esc(a.refBL) + '</td><td>' + fcfa(a.total) + '</td>' +
+      '<td class="col-mobile-cache">' + fcfa(a.paye) + '</td>' +
+      '<td style="color:' + (a.reste > 0 ? 'var(--err)' : 'var(--ok)') + '">' + fcfa(a.reste) + '</td>' +
+      '<td class="col-mobile-cache"><span class="badge ' + (a.statut === 'Annulé' ? 'non' : 'oui') + '">' + esc(a.statut) + '</span></td></tr>').join('') +
+    '</tbody></table></div>';
+}
+
+function nouvelAchat(){
+  const d = H.data;
+  if (!d.fournisseurs.length) return toast("Ajoutez d'abord un fournisseur dans Clients & fournisseurs.", true);
+  if (!d.articles.length) return toast("Ajoutez d'abord des articles.", true);
+  H.lignes = [{ article: '', qte: '', pu: '' }];
+  modale('Nouvel achat',
+    '<div class="grille">' +
+      '<div><label>Fournisseur</label><select id="h-four"><option value="">— Choisir —</option>' +
+        d.fournisseurs.map(f => '<option value="' + esc(f.code) + '">' + esc(f.nom) + '</option>').join('') + '</select></div>' +
+      '<div><label>Date d\'arrivée</label><input id="h-date" type="date" value="' + aujourdhui() + '" max="' + aujourdhui() + '">' +
+        aide('Le jour où la marchandise est arrivée. Chaque achat crée un lot daté dans le stock.') + '</div>' +
+      '<div><label>N° du bon de livraison (facultatif)</label><input id="h-bl"></div>' +
+      ((d.depots || []).length > 1 ? '<div><label>Dépôt de réception' + info('L\'endroit où la marchandise est rangée à l\'arrivée. Pour la vendre, elle doit être au magasin : faites ensuite un transfert si besoin.') +
+        '</label><select id="h-depot">' + d.depots.map(x => '<option value="' + esc(x.code) + '"' + (x.code === MAG ? ' selected' : '') + '>' + esc(x.nom) + '</option>').join('') + '</select></div>' : '') +
+    '</div>' +
+    '<label style="margin-top:18px">Articles reçus</label><div id="h-lignes"></div>' +
+    '<button class="btn second" onclick="H.lignes.push({article:\'\',qte:\'\',pu:\'\'});dessinerLignesAchat()">+ Ajouter une ligne</button>' +
+    '<div class="totaux"><span>Total : <b id="h-total"></b></span></div>' +
+    '<div class="grille">' +
+      '<div><label>Montant payé au fournisseur</label><div style="display:flex;gap:8px"><input id="h-paye" inputmode="decimal" value="0" oninput="totalAchat()">' +
+        '<button class="btn second" style="white-space:nowrap" onclick="$(\'h-paye\').value=H.total;totalAchat()">Tout payé</button></div>' +
+        aide('Le reste sera suivi dans <b>Impayés → fournisseurs</b>.') + '</div>' +
+      '<div><label>Reste à payer</label><p id="h-reste" style="font-weight:bold;margin:10px 0 0"></p></div>' +
+    '</div>' +
+    '<label style="display:flex;gap:8px;align-items:center;font-weight:normal;color:var(--texte)">' +
+      '<input id="h-maj" type="checkbox" checked style="width:auto"> Mettre à jour le prix d\'achat des articles avec ces prix</label>',
+    async () => {
+      const r = await api('apiEnregistrerAchat', S.token, {
+        fournisseur: $('h-four').value, date: $('h-date').value, refBL: $('h-bl').value, depot: $('h-depot') ? $('h-depot').value : MAG,
+        lignes: H.lignes, paye: $('h-paye').value, majPrix: $('h-maj').checked });
+      H.data = r; toast('Achat ' + r.numeroCree + ' enregistré — stock mis à jour'); dessinerAchats();
+    }, true);
+  dessinerLignesAchat();
+}
+
+function dessinerLignesAchat(){
+  const arts = H.data.articles;
+  $('h-lignes').innerHTML = H.lignes.map((l, i) =>
+    '<div class="ligne-achat">' +
+      '<select onchange="choisirArticleAchat(' + i + ',this.value)"><option value="">— Article —</option>' +
+        arts.map(a => '<option value="' + esc(a.code) + '"' + (a.code === l.article ? ' selected' : '') + '>' + esc(a.designation) + '</option>').join('') + '</select>' +
+      '<input inputmode="decimal" placeholder="Qté" value="' + esc(l.qte) + '" oninput="H.lignes[' + i + '].qte=this.value;totalAchat()">' +
+      '<input inputmode="decimal" placeholder="Prix unitaire" value="' + esc(l.pu) + '" oninput="H.lignes[' + i + '].pu=this.value;totalAchat()">' +
+      '<span class="st" id="h-st-' + i + '"></span>' +
+      '<button class="btn second" title="Retirer la ligne" onclick="retirerLigneAchat(' + i + ')">✕</button>' +
+    '</div>').join('');
+  totalAchat();
+}
+
+function choisirArticleAchat(i, code){
+  const a = H.data.articles.find(x => x.code === code);
+  H.lignes[i].article = code;
+  if (a && H.lignes[i].pu === '') H.lignes[i].pu = String(a.prixAchat || '');
+  dessinerLignesAchat();
+}
+
+function retirerLigneAchat(i){
+  H.lignes.splice(i, 1);
+  if (!H.lignes.length) H.lignes.push({ article: '', qte: '', pu: '' });
+  dessinerLignesAchat();
+}
+
+function totalAchat(){
+  let t = 0;
+  H.lignes.forEach((l, i) => {
+    const m = Math.round(numVal(l.qte) * numVal(l.pu));
+    t += m;
+    const e = $('h-st-' + i); if (e) e.textContent = l.article ? fcfa(m) : '';
+  });
+  H.total = t;
+  $('h-total').textContent = fcfa(t);
+  const reste = t - numVal($('h-paye').value);
+  $('h-reste').textContent = fcfa(reste);
+  $('h-reste').style.color = reste > 0 ? 'var(--err)' : 'var(--ok)';
+}
+
+async function detailAchat(numero){
+  let d;
+  try { d = await api('apiAchatDetail', S.token, numero); } catch(e) { return toast(msgErreur(e), true); }
+  const a = d.achat, annule = a.statut === 'Annulé';
+  $('modale-zone').innerHTML = '<div class="voile"><div class="modale large">' +
+    '<h3>Achat ' + esc(a.numero) + (annule ? ' <span class="badge non">Annulé</span>' : '') + '</h3>' +
+    '<p style="color:var(--gris);margin:4px 0 14px">' + esc(a.date) + ' · ' + esc(a.fournisseur) +
+      (a.refBL ? ' · BL ' + esc(a.refBL) : '') + ' · reçu au <b>' + esc(a.depotNom || 'Magasin') + '</b> · saisi par ' + esc(a.utilisateur) + '</p>' +
+    '<div style="overflow-x:auto"><table><thead><tr><th>Article</th><th>Qté</th><th>Prix unitaire</th><th>Montant</th></tr></thead><tbody>' +
+      d.lignes.map(l => '<tr style="cursor:default"><td>' + esc(l.designation) + '</td><td>' + l.quantite.toLocaleString('fr-FR') +
+        '</td><td>' + fcfa(l.prixUnitaire) + '</td><td>' + fcfa(l.montant) + '</td></tr>').join('') +
+    '</tbody></table></div>' +
+    '<div class="totaux"><span>Total : <b>' + fcfa(a.total) + '</b></span><span>Payé : <b>' + fcfa(a.paye) + '</b></span>' +
+      '<span>Reste : <b style="color:' + (a.reste > 0 ? 'var(--err)' : 'var(--ok)') + '">' + fcfa(a.reste) + '</b></span></div>' +
+    (annule ? '<p style="color:var(--err);margin-top:14px">Motif d\'annulation : ' + esc(a.motif) + '</p>' :
+      '<details style="margin-top:16px"><summary style="cursor:pointer;color:var(--err)">Annuler cet achat</summary>' +
+      '<label>Motif de l\'annulation (le stock reçu sera retiré)</label><input id="h-motif">' +
+      '<div class="actions"><button class="btn" style="background:var(--err)" onclick="annulerAchat(\'' + esc(a.numero) + '\', this)">Confirmer l\'annulation</button></div></details>') +
+    '<div class="msg" id="mod-msg"></div>' +
+    '<div class="actions"><button class="btn second" onclick="fermerModale()">Fermer</button></div></div></div>';
+}
+
+async function annulerAchat(numero, btn){
+  await occupe(btn, async () => {
+    try {
+      H.data = await api('apiAnnulerAchat', S.token, numero, $('h-motif').value);
+      fermerModale(); toast('Achat ' + numero + ' annulé'); dessinerAchats();
+    } catch(e) { $('mod-msg').textContent = msgErreur(e); }
+  });
+}
+
+
+/* ===== Étape 5 : Caisse & ventes ===== */
+const C = { data: null, panier: [], onglet: 'vente', sugg: [], sel: 0, jour: null, client: '', facture: null };
+
+function enLettres(n){
+  n = Math.round(Math.abs(Number(n) || 0));
+  if (n === 0) return 'Zéro';
+  const u = ['','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix','onze','douze','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf'];
+  const d = ['','dix','vingt','trente','quarante','cinquante','soixante','soixante','quatre-vingt','quatre-vingt'];
+  const diz = x => {
+    if (x < 20) return u[x];
+    const t = Math.floor(x / 10), o = x % 10;
+    if (t === 7 || t === 9) return d[t] + (t === 7 && o === 1 ? ' et ' : '-') + u[10 + o];
+    if (o === 0) return d[t] + (t === 8 ? 's' : '');
+    return d[t] + (o === 1 && t !== 8 ? ' et un' : '-' + u[o]);
+  };
+  const cent = x => {
+    const c = Math.floor(x / 100), r = x % 100;
+    let s = c ? (c > 1 ? u[c] + ' cent' + (r === 0 ? 's' : '') : 'cent') : '';
+    if (r) s += (s ? ' ' : '') + diz(r);
+    return s;
+  };
+  const sansS = s => s.replace(/cents$/, 'cent').replace(/vingts$/, 'vingt');
+  const p = [];
+  const mrd = Math.floor(n / 1e9), mio = Math.floor(n % 1e9 / 1e6), k = Math.floor(n % 1e6 / 1000), r = n % 1000;
+  if (mrd) p.push(cent(mrd) + ' milliard' + (mrd > 1 ? 's' : ''));
+  if (mio) p.push(cent(mio) + ' million' + (mio > 1 ? 's' : ''));
+  if (k) p.push(k === 1 ? 'mille' : sansS(cent(k)) + ' mille');
+  if (r) p.push(cent(r));
+  const s = p.join(' ');
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+async function vueCaisse(){
+  if (!C.jour) C.jour = aujourdhui();
+  await charger('caisse', () => api('apiCaisse', S.token),
+    (d, maj) => { C.data = d; if (!maj) dessinerCaisse(); }, 'Caisse & ventes', () => S.vue === 'caisse');
+}
+
+function dessinerCaisse(){
+  const o = [['vente', 'Nouvelle vente'], ['historique', C.data.gerant ? 'Ventes' : 'Mes ventes']];
+  $('vue').innerHTML = '<h2>Caisse & ventes</h2><div class="onglets">' +
+    o.map(x => '<button class="' + (C.onglet === x[0] ? 'actif' : '') + '" onclick="C.onglet=\'' + x[0] + '\';dessinerCaisse()">' + x[1] + '</button>').join('') +
+    '</div><div id="c-contenu"></div>';
+  if (C.onglet === 'vente') ecranVente(); else historiqueVentes();
+}
+
+function ecranVente(){
+  const d = C.data, g = d.gerant, aj = C.ajout;
+  if (aj) return ecranAjout();
+  $('c-contenu').innerHTML = astuce('caisse', '<b>Vente rapide :</b> tapez 2 ou 3 lettres du nom, choisissez avec ↓ ↑ puis <b>Entrée</b>. Le stock disponible s\'affiche à côté de chaque article.') +
+    '<div class="caisse"><div class="bloc">' +
+    '<div id="c-panier"></div>' +
+    '<div class="recherche-art" style="margin-top:14px"><input id="c-rech" autocomplete="off" placeholder="Tapez le nom ou le code d\'un article…" ' +
+      'oninput="C.sel=0;suggestions(this.value)" onkeydown="clavierSugg(event)" onfocus="suggestions(this.value)" ' +
+      'onblur="setTimeout(function(){var b=$(\'c-sugg\');if(b)b.classList.add(\'cache\')},200)">' +
+    '<div id="c-sugg" class="suggs cache"></div></div></div>' +
+    '<div class="bloc recap">' +
+      '<label style="margin-top:0">Client' + info('« Client de passage » pour une vente payée. Pour un crédit, choisissez la fiche du client ou créez-la avec le bouton +.') + '</label><div style="display:flex;gap:6px"><select id="c-client" onchange="C.client=this.value">' +
+        '<option value="">Client de passage</option>' +
+        d.clients.map(c => '<option value="' + esc(c.code) + '"' + (c.code === C.client ? ' selected' : '') + '>' + esc(c.nom) +
+          (c.telephone ? ' — ' + esc(c.telephone) : '') + '</option>').join('') +
+      '</select><button class="btn second" title="Nouveau client" onclick="nouveauClientCaisse()">+</button></div>' +
+      '<label>Mode de paiement</label><select id="c-mode">' + d.modes.map(m => '<option>' + esc(m) + '</option>').join('') + '</select>' +
+      '<div class="grille">' +
+        (g ? '<div><label>Remise</label><input id="c-remise" inputmode="decimal" placeholder="0" oninput="totauxVente()"></div>' : '<input id="c-remise" type="hidden" value="">') +
+        '<div><label>Montant versé</label><input id="c-verse" inputmode="decimal" placeholder="= net" oninput="totauxVente()"></div>' +
+      '</div>' +
+      aide('Vide = payé exactement · plus = monnaie à rendre · moins = crédit (fiche client obligatoire).') +
+      '<div class="ligne"><span>Total</span><b id="c-total"></b></div>' +
+      '<div class="ligne"><span>Net à payer</span><span class="net" id="c-net"></span></div>' +
+      '<div class="ligne" id="c-solde"></div>' +
+      '<button class="btn orange" style="width:100%;padding:14px;font-size:16px;margin-top:6px" onclick="validerVente(this)">Valider la vente</button>' +
+      '<button class="btn second" style="width:100%;margin-top:8px" onclick="viderPanier()">Vider le panier</button>' +
+    '</div></div>';
+  dessinerPanier();
+  $('c-rech').focus();
+}
+
+function suggestions(q){
+  const box = $('c-sugg');
+  q = String(q || '').trim().toLowerCase();
+  if (!q) { box.classList.add('cache'); C.sugg = []; return; }
+  C.sugg = C.data.articles.filter(a => (a.designation + ' ' + a.code + ' ' + a.famille).toLowerCase().indexOf(q) >= 0).slice(0, 8);
+  if (C.sel >= C.sugg.length) C.sel = 0;
+  box.innerHTML = C.sugg.length ? C.sugg.map((a, i) =>
+    '<div class="sugg' + (i === C.sel ? ' actif' : '') + (a.stock <= 0 ? ' rupture' : '') + '" onmousedown="ajouterAuPanier(\'' + esc(a.code) + '\')">' +
+      '<span><b>' + esc(a.designation) + '</b><br><small>' + esc(a.code) + ' · ' + esc(a.famille) + '</small></span>' +
+      '<span class="droite"><b>' + fcfa(a.prix) + '</b><br><span class="badge ' + (a.stock > 0 ? 'oui' : 'non') + '">' +
+        (a.stock > 0 ? 'Stock : ' + a.stock.toLocaleString('fr-FR') + ' ' + esc(a.unite.toLowerCase()) : 'Rupture') + '</span>' +
+        (a.reserve > 0 ? '<br><small style="color:var(--gris)">+ ' + a.reserve.toLocaleString('fr-FR') + ' en dépôt</small>' : '') + '</span>' +
+    '</div>').join('') : '<div class="sugg" style="cursor:default;color:var(--gris)">Aucun article trouvé</div>';
+  box.classList.remove('cache');
+}
+
+function clavierSugg(e){
+  if (!C.sugg.length) return;
+  if (e.key === 'ArrowDown') { C.sel = Math.min(C.sel + 1, C.sugg.length - 1); suggestions(e.target.value); e.preventDefault(); }
+  else if (e.key === 'ArrowUp') { C.sel = Math.max(C.sel - 1, 0); suggestions(e.target.value); e.preventDefault(); }
+  else if (e.key === 'Enter') { ajouterAuPanier(C.sugg[C.sel].code); e.preventDefault(); }
+  else if (e.key === 'Escape') $('c-sugg').classList.add('cache');
+}
+
+function ajouterAuPanier(code){
+  const a = C.data.articles.find(x => x.code === code);
+  if (!a) return;
+  const l = C.panier.find(x => x.article === code);
+  const deja = l ? numVal(l.qte) : 0;
+  if (deja + 1 > a.stock) {
+    toast((a.stock > 0 ? 'Stock insuffisant au magasin : ' + a.stock + ' disponible(s).' : 'Rupture au magasin : « ' + a.designation + ' ».') +
+      (a.reserve > 0 ? ' ' + a.reserve + ' en dépôt : demandez un transfert vers le magasin.' : ''), true);
+  } else if (l) {
+    l.qte = String(deja + 1);
+  } else {
+    C.panier.push({ article: a.code, designation: a.designation, unite: a.unite, stock: a.stock, qte: '1', pu: String(a.prix) });
+  }
+  $('c-rech').value = ''; C.sugg = []; $('c-sugg').classList.add('cache');
+  dessinerPanier();
+  $('c-rech').focus();
+}
+
+function dessinerPanier(){
+  const g = C.data.gerant;
+  if (!C.panier.length) {
+    $('c-panier').innerHTML = etatVide('panier', 'Le panier est vide', 'Recherchez un article dans le champ ci-dessous.', '', true);
+    totauxVente(); return;
+  }
+  $('c-panier').innerHTML = '<div style="overflow-x:auto"><table class="panier"><thead><tr><th>Article</th><th>Qté</th><th>Prix</th><th>Montant</th><th></th></tr></thead><tbody>' +
+    C.panier.map((l, i) => {
+      const trop = numVal(l.qte) > l.stock;
+      return '<tr style="cursor:default"><td><b>' + esc(l.designation) + '</b><br><small style="color:var(--gris)">Stock dispo : ' +
+          l.stock.toLocaleString('fr-FR') + ' ' + esc(l.unite.toLowerCase()) + '</small></td>' +
+        '<td><input inputmode="decimal" value="' + esc(l.qte) + '" style="width:70px' + (trop ? ';border-color:var(--err)' : '') + '" ' +
+          'oninput="C.panier[' + i + '].qte=this.value;this.style.borderColor=numVal(this.value)>C.panier[' + i + '].stock?\'var(--err)\':\'\';majLigne(' + i + ')"></td>' +
+        '<td>' + (g ? '<input inputmode="decimal" value="' + esc(l.pu) + '" oninput="C.panier[' + i + '].pu=this.value;majLigne(' + i + ')">' : fcfa(l.pu)) + '</td>' +
+        '<td id="c-m-' + i + '" style="white-space:nowrap">' + fcfa(Math.round(numVal(l.qte) * numVal(l.pu))) + '</td>' +
+        '<td><button class="btn second" style="padding:6px 10px" title="Retirer" onclick="C.panier.splice(' + i + ',1);dessinerPanier()">✕</button></td></tr>';
+    }).join('') + '</tbody></table></div>';
+  totauxVente();
+}
+
+function majLigne(i){
+  const l = C.panier[i];
+  $('c-m-' + i).textContent = fcfa(Math.round(numVal(l.qte) * numVal(l.pu)));
+  totauxVente();
+}
+
+function totauxVente(){
+  if (!$('c-total')) return;
+  const total = C.panier.reduce((s, l) => s + Math.round(numVal(l.qte) * numVal(l.pu)), 0);
+  if (C.ajout) {
+    const aj = C.ajout, vs = $('c-verse').value.trim(), verse = vs === '' ? total : numVal(vs);
+    const du = total + aj.reste, e = $('c-solde');
+    $('c-total').textContent = fcfa(total);
+    $('c-net').textContent = fcfa(aj.net + total);
+    if (verse > du) e.innerHTML = '<span>Monnaie à rendre</span><b style="color:var(--ok)">' + fcfa(verse - du) + '</b>';
+    else if (verse < du) e.innerHTML = '<span>Reste dû (crédit)</span><b style="color:var(--err)">' + fcfa(du - verse) + '</b>';
+    else e.innerHTML = '<span>Paiement</span><b style="color:var(--ok)">Soldé</b>';
+    return;
+  }
+  const net = Math.max(0, total - numVal($('c-remise').value));
+  const vs = $('c-verse').value.trim();
+  const verse = vs === '' ? net : numVal(vs);
+  $('c-total').textContent = fcfa(total);
+  $('c-net').textContent = fcfa(net);
+  const e = $('c-solde');
+  if (verse > net) e.innerHTML = '<span>Monnaie à rendre</span><b style="color:var(--ok)">' + fcfa(verse - net) + '</b>';
+  else if (verse < net) e.innerHTML = '<span>Reste dû (crédit)</span><b style="color:var(--err)">' + fcfa(net - verse) + '</b>';
+  else e.innerHTML = '<span>Paiement</span><b style="color:var(--ok)">Comptant</b>';
+}
+
+function viderPanier(){ C.panier = []; C.client = ''; ecranVente(); }
+
+/* ----- Compléter une vente déjà validée ----- */
+function peutCompleter(f){
+  if (f.horsLigne) return false;
+  const jour = aujourdhui().split('-').reverse().join('/');
+  return f.statut !== 'Annulée' && String(f.date).slice(0, 10) === jour &&
+    (S.user.fonction === 'Gérant' || f.codeCaissier === S.user.code);
+}
+
+function commencerAjout(){
+  const f = C.facture;
+  C.ajout = { numero: f.numero, client: f.client, mode: f.mode, net: f.net, paye: f.paye, reste: f.reste, nb: f.lignes.length };
+  C.panier = []; C.onglet = 'vente';
+  fermerModale();
+  if (S.vue === 'caisse') dessinerCaisse(); else allerA('caisse');
+}
+
+function annulerAjout(){ C.ajout = null; C.panier = []; ecranVente(); }
+
+function ecranAjout(){
+  const aj = C.ajout;
+  $('c-contenu').innerHTML =
+    '<div class="bloc" style="margin-bottom:14px;border-color:var(--orange);background:#FFF6EE">' +
+      '<b style="color:var(--orange)">Ajout d\'articles à la facture ' + esc(aj.numero) + '</b><br>' +
+      '<span style="color:var(--gris)">Client : ' + esc(aj.client) + ' · déjà ' + aj.nb + ' article(s) · total ' + fcfa(aj.net) +
+      ' · payé ' + fcfa(aj.paye) + (aj.reste > 0 ? ' · reste dû ' + fcfa(aj.reste) : '') + '</span></div>' +
+    '<div class="caisse"><div class="bloc">' +
+    '<div id="c-panier"></div>' +
+    '<div class="recherche-art" style="margin-top:14px"><input id="c-rech" autocomplete="off" placeholder="Tapez le nom ou le code de l\'article à ajouter…" ' +
+      'oninput="C.sel=0;suggestions(this.value)" onkeydown="clavierSugg(event)" onfocus="suggestions(this.value)" ' +
+      'onblur="setTimeout(function(){var b=$(\'c-sugg\');if(b)b.classList.add(\'cache\')},200)">' +
+    '<div id="c-sugg" class="suggs cache"></div></div></div>' +
+    '<div class="bloc recap">' +
+      '<label style="margin-top:0">Mode de paiement</label><select id="c-mode" disabled><option>' + esc(aj.mode) + '</option></select>' +
+      '<input id="c-remise" type="hidden" value="">' +
+      '<label>Montant versé maintenant</label><input id="c-verse" inputmode="decimal" placeholder="= articles ajoutés" oninput="totauxVente()">' +
+      aide('Possible uniquement pour une vente du jour. Pour retirer un article, le gérant annule la vente.') +
+      '<div class="ligne"><span>Articles ajoutés</span><b id="c-total"></b></div>' +
+      '<div class="ligne"><span>Nouveau total facture</span><span class="net" id="c-net"></span></div>' +
+      '<div class="ligne" id="c-solde"></div>' +
+      '<button class="btn orange" style="width:100%;padding:14px;font-size:16px;margin-top:6px" onclick="validerVente(this)">Ajouter à la facture</button>' +
+      '<button class="btn second" style="width:100%;margin-top:8px" onclick="annulerAjout()">Annuler l\'ajout</button>' +
+    '</div></div>';
+  dessinerPanier();
+  $('c-rech').focus();
+}
+
+async function validerVente(btn){
+  if (!C.panier.length) return toast('Le panier est vide.', true);
+  await occupe(btn, async () => {
+    try {
+      const lignes = C.panier.map(l => ({ article: l.article, qte: l.qte, pu: l.pu }));
+      let r;
+      if (C.ajout) r = await api('apiAjouterArticlesVente', S.token, C.ajout.numero, { lignes: lignes, verse: $('c-verse').value });
+      else {
+        const v = { lignes: lignes, client: $('c-client').value, mode: $('c-mode').value, remise: $('c-remise') ? $('c-remise').value : '',
+                    verse: $('c-verse').value, idLocal: C.idLocal || (C.idLocal = nouvelId()) };
+        try { r = await api('apiEnregistrerVente', S.token, v); }
+        catch(e) { if (!e.horsLigne) throw e; r = venteHorsLigne(v); }
+      }
+      C.ajout = null; C.idLocal = null;
+      C.panier.forEach(l => { const a = C.data.articles.find(x => x.code === l.article); if (a) a.stock -= numVal(l.qte); });
+      if (S.user) ecrireL('mmc_caisse_' + S.user.code, C.data);
+      C.panier = []; C.client = '';
+      ecranVente();
+      afficherFacture(r.facture, r.monnaie);
+    } catch(e) { toast(msgErreur(e), true); }
+  });
+}
+
+function nouveauClientCaisse(){
+  modale('Nouveau client',
+    '<label>Nom et prénom</label><input id="nc-nom"><label>Téléphone</label><input id="nc-tel" type="tel" inputmode="tel">',
+    async () => {
+      const nom = $('nc-nom').value.trim().toLowerCase();
+      const r = await api('apiEnregistrerTiers', S.token, { type: 'Client', nom: $('nc-nom').value, telephone: $('nc-tel').value, actif: 'Oui' });
+      C.data.clients = r.tiers.filter(t => t.type === 'Client' && t.actif === 'Oui').map(t => ({ code: t.code, nom: t.nom, telephone: t.telephone }));
+      const c = C.data.clients.find(x => x.nom.toLowerCase() === nom);
+      if (c) C.client = c.code;
+      toast('Client ajouté');
+      setTimeout(ecranVente, 0);
+    });
+}
+
+function htmlFacture(f){
+  const e = f.entreprise, dev = e.devise;
+  const m = n => (Number(n) || 0).toLocaleString('fr-FR') + ' ' + dev;
+  const droite = 'style="text-align:right;white-space:nowrap"';
+  return (f.statut === 'Annulée' ? '<div class="annulee">FACTURE ANNULÉE</div>' : '') +
+    '<div class="ent"><div><h1>' + esc(e.nom) + '</h1>' +
+      (e.activite ? '<div>' + esc(e.activite) + '</div>' : '') +
+      (e.adresse ? '<div>' + esc(e.adresse) + '</div>' : '') +
+      (e.tel ? '<div>Tél. : ' + esc(e.tel) + '</div>' : '') + '</div>' +
+    '<div class="num"><div>FACTURE N°</div><b>' + esc(f.numero) + '</b><div>Date : ' + esc(f.date) + '</div>' +
+      '<div>Caissier : ' + esc(f.caissier) + '</div></div></div>' +
+    '<p><b>Client :</b> ' + esc(f.client) + (f.telephoneClient ? ' — ' + esc(f.telephoneClient) : '') + '</p>' +
+    (f.modification ? '<p style="font-size:12px;color:#555;margin-top:-6px">Facture complétée ' + esc(f.modification.replace(/ \(\+\d+\)/g, '')) + '</p>' : '') +
+    (f.horsLigne ? '<div class="facture-hl">Facture établie hors ligne — numéro provisoire. Le numéro définitif sera attribué à l\'envoi.</div>'
+      : f.provisoire ? '<p style="font-size:12px;color:#555;margin-top:-6px">Établie hors ligne (n° provisoire ' + esc(f.provisoire) + ')</p>' : '') +
+    '<table><thead><tr><th>Désignation</th><th ' + droite + '>Qté</th><th ' + droite + '>Prix unitaire</th><th ' + droite + '>Montant</th></tr></thead><tbody>' +
+      f.lignes.map(l => '<tr style="cursor:default"><td>' + esc(l.designation) + '</td><td ' + droite + '>' + l.quantite.toLocaleString('fr-FR') +
+        '</td><td ' + droite + '>' + m(l.prixUnitaire) + '</td><td ' + droite + '>' + m(l.montant) + '</td></tr>').join('') +
+    '</tbody></table>' +
+    '<div class="tot"><div><span>Total</span><span>' + m(f.total) + '</span></div>' +
+      (f.remise ? '<div><span>Remise</span><span>- ' + m(f.remise) + '</span></div>' : '') +
+      '<div class="net"><span>Net à payer</span><span>' + m(f.net) + '</span></div>' +
+      '<div><span>Payé (' + esc(f.mode) + ')</span><span>' + m(f.paye) + '</span></div>' +
+      (f.reste > 0 ? '<div style="color:#B3261E;font-weight:bold"><span>Reste à payer</span><span>' + m(f.reste) + '</span></div>' : '') +
+    '</div>' +
+    '<p class="lettres">Arrêtée la présente facture à la somme de : <b>' + esc(enLettres(f.net)) + ' ' +
+      (dev === 'FCFA' ? 'francs CFA' : esc(dev)) + '</b>.</p>' +
+    '<div class="pied"><span>' + esc(e.mention || '') + '</span><span>Signature et cachet</span></div>';
+}
+
+function afficherFacture(f, monnaie, extra){
+  C.facture = f;
+  $('modale-zone').innerHTML = '<div class="voile"><div class="modale large">' +
+    (monnaie ? '<p class="monnaie">Monnaie à rendre : <b>' + fcfa(monnaie) + '</b></p>' : '') +
+    '<div class="fact apercu">' + htmlFacture(f) + '</div>' + (extra || '') +
+    '<div class="msg" id="mod-msg"></div><div class="actions">' +
+      '<button class="btn second" onclick="fermerModale()">Fermer</button>' +
+      (peutCompleter(f) ? '<button class="btn second" onclick="commencerAjout()">+ Ajouter des articles</button>' : '') +
+      '<button class="btn orange" onclick="imprimerFacture()">Imprimer la facture</button></div></div></div>';
+}
+
+function imprimerFacture(){
+  $('impression').innerHTML = '<div class="fact">' + htmlFacture(C.facture) + '</div>';
+  window.print();
+}
+
+async function historiqueVentes(){
+  const cle = 'ventes:' + C.jour, jour = C.jour;
+  if (!CACHE[cle]) $('c-contenu').innerHTML = '<div class="bloc vide">Chargement…</div>';
+  await charger(cle, () => api('apiVentes', S.token, jour), (r, maj) => { if (!maj || libre()) dessinerHistorique(r); });
+}
+
+function dessinerHistorique(r){
+  const v = r.ventes, ok = v.filter(x => x.statut !== 'Annulée'), g = C.data.gerant;
+  const somme = k => ok.reduce((s, x) => s + x[k], 0);
+  $('c-contenu').innerHTML =
+    '<div class="entete-bloc"><input type="date" value="' + esc(r.jour) + '" max="' + aujourdhui() + '" style="max-width:200px" ' +
+      'onchange="C.jour=this.value;historiqueVentes()"></div>' +
+    '<div class="stats">' +
+      '<div class="stat"><small>Ventes (net)</small><b>' + fcfa(somme('net')) + '</b></div>' +
+      '<div class="stat"><small>Encaissé</small><b style="color:var(--ok)">' + fcfa(somme('paye')) + '</b></div>' +
+      '<div class="stat"><small>Crédit accordé</small><b style="color:' + (somme('reste') ? 'var(--err)' : 'var(--ok)') + '">' + fcfa(somme('reste')) + '</b></div>' +
+      '<div class="stat"><small>Nombre de ventes</small><b>' + ok.length + '</b></div>' +
+    '</div><div class="bloc">' + (v.length ?
+      '<div style="overflow-x:auto"><table><thead><tr><th>N°</th><th>Heure</th><th>Client</th><th>Net</th>' +
+      '<th class="col-mobile-cache">Payé</th><th>Reste</th><th class="col-mobile-cache">Mode</th>' +
+      (g ? '<th class="col-mobile-cache">Caissier</th>' : '') + '<th class="col-mobile-cache">Statut</th></tr></thead><tbody>' +
+      v.map(x => '<tr onclick="voirVente(\'' + esc(x.numero) + '\')"' + (x.statut === 'Annulée' ? ' style="opacity:.55"' : '') + '>' +
+        '<td>' + esc(x.numero) + '</td><td>' + esc(x.heure) + '</td><td><b>' + esc(x.client) + '</b></td><td>' + fcfa(x.net) + '</td>' +
+        '<td class="col-mobile-cache">' + fcfa(x.paye) + '</td>' +
+        '<td style="color:' + (x.reste > 0 ? 'var(--err)' : 'var(--ok)') + '">' + fcfa(x.reste) + '</td>' +
+        '<td class="col-mobile-cache">' + esc(x.mode) + '</td>' + (g ? '<td class="col-mobile-cache">' + esc(x.caissier) + '</td>' : '') +
+        '<td class="col-mobile-cache"><span class="badge ' + (x.statut === 'Annulée' ? 'non' : 'oui') + '">' + esc(x.statut) + '</span></td></tr>').join('') +
+      '</tbody></table></div>' : etatVide('recu', 'Aucune vente ce jour-là', 'Choisissez une autre date, ou faites une vente dans « Nouvelle vente ».')) + '</div>';
+}
+
+async function voirVente(numero){
+  let f;
+  try { f = await api('apiFacture', S.token, numero); } catch(e) { return toast(msgErreur(e), true); }
+  let extra = '';
+  if (f.statut === 'Annulée') extra = '<p style="color:var(--err);margin-top:12px">Motif d\'annulation : ' + esc(f.motif) + '</p>';
+  else if (C.data.gerant) extra = '<details style="margin-top:16px"><summary style="cursor:pointer;color:var(--err)">Annuler cette vente</summary>' +
+    '<label>Motif de l\'annulation (le stock sera remis)</label><input id="v-motif">' +
+    '<div class="actions"><button class="btn" style="background:var(--err)" onclick="annulerVente(\'' + esc(f.numero) + '\', this)">Confirmer l\'annulation</button></div></details>';
+  afficherFacture(f, 0, extra);
+}
+
+async function annulerVente(numero, btn){
+  await occupe(btn, async () => {
+    try {
+      await api('apiAnnulerVente', S.token, numero, $('v-motif').value);
+      fermerModale(); toast('Vente ' + numero + ' annulée — stock remis');
+      try { C.data = await api('apiCaisse', S.token); } catch(e) {}
+      historiqueVentes();
+    } catch(e) { $('mod-msg').textContent = msgErreur(e); }
+  });
+}
+
+
+/* ===== Étape 6 : Dépenses ===== */
+const D = { data: null, mois: null, categorie: '' };
+
+async function vueDepenses(){
+  if (!D.mois) D.mois = aujourdhui().slice(0, 7);
+  const mois = D.mois;
+  await charger('depenses:' + mois, () => api('apiDepenses', S.token, mois),
+    (d, maj) => { D.data = d; if (!maj || libre()) dessinerDepenses(); }, 'Dépenses');
+}
+
+function dessinerDepenses(){
+  const d = D.data, ok = d.depenses.filter(x => x.statut !== 'Annulée');
+  const total = ok.reduce((s, x) => s + x.montant, 0);
+  const jour = aujourdhui().split('-').reverse().join('/');
+  const totalJour = ok.filter(x => x.date === jour).reduce((s, x) => s + x.montant, 0);
+  const parCat = {};
+  ok.forEach(x => { parCat[x.categorie] = (parCat[x.categorie] || 0) + x.montant; });
+  const cats = Object.keys(parCat).sort((a, b) => parCat[b] - parCat[a]);
+  const l = d.depenses.filter(x => !D.categorie || x.categorie === D.categorie);
+  $('vue').innerHTML = '<h2>Dépenses</h2>' +
+    '<div class="stats">' +
+      '<div class="stat"><small>Total du mois</small><b style="color:var(--err)">' + fcfa(total) + '</b></div>' +
+      '<div class="stat"><small>Aujourd\'hui</small><b>' + fcfa(totalJour) + '</b></div>' +
+      '<div class="stat"><small>Nombre de dépenses</small><b>' + ok.length + '</b></div>' +
+    '</div>' +
+    (cats.length ? '<div class="bloc" style="margin-bottom:14px"><b style="color:var(--bleu)">Par catégorie</b>' +
+      cats.map(c => '<div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span style="width:190px;flex-shrink:0">' + esc(c) + '</span>' +
+        '<div style="flex:1;background:var(--fond);border-radius:6px;height:12px"><div style="width:' + Math.max(3, Math.round(parCat[c] / total * 100)) +
+        '%;background:var(--orange);height:12px;border-radius:6px"></div></div><b style="white-space:nowrap">' + fcfa(parCat[c]) + '</b></div>').join('') +
+      '</div>' : '') +
+    '<div class="bloc"><div class="entete-bloc" style="flex-wrap:wrap">' +
+      '<input type="month" value="' + esc(d.mois) + '" max="' + aujourdhui().slice(0, 7) + '" style="max-width:190px" onchange="D.mois=this.value;vueDepenses()">' +
+      '<select style="max-width:230px" onchange="D.categorie=this.value;dessinerDepenses()"><option value="">Toutes les catégories</option>' +
+        d.categories.map(c => '<option' + (c === D.categorie ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select>' +
+      '<span style="flex:1"></span><button class="btn orange" onclick="nouvelleDepense()">+ Nouvelle dépense</button></div>' +
+    (l.length ? '<div style="overflow-x:auto"><table><thead><tr><th>N°</th><th>Date</th><th>Catégorie</th><th>Libellé</th><th>Montant</th>' +
+      '<th class="col-mobile-cache">Mode</th>' + (d.gerant ? '<th class="col-mobile-cache">Saisi par</th>' : '') + '<th class="col-mobile-cache">Statut</th></tr></thead><tbody>' +
+      l.map(x => '<tr onclick="detailDepense(\'' + esc(x.numero) + '\')"' + (x.statut === 'Annulée' ? ' style="opacity:.55"' : '') + '>' +
+        '<td>' + esc(x.numero) + '</td><td>' + esc(x.date) + '</td><td>' + esc(x.categorie) + '</td><td><b>' + esc(x.libelle) + '</b></td>' +
+        '<td style="white-space:nowrap">' + fcfa(x.montant) + '</td><td class="col-mobile-cache">' + esc(x.mode) + '</td>' +
+        (d.gerant ? '<td class="col-mobile-cache">' + esc(x.utilisateur) + '</td>' : '') +
+        '<td class="col-mobile-cache"><span class="badge ' + (x.statut === 'Annulée' ? 'non' : 'oui') + '">' + esc(x.statut) + '</span></td></tr>').join('') +
+      '</tbody></table></div>' : etatVide('portefeuille', 'Aucune dépense pour cette période', 'Notez ici chaque sortie d\'argent (loyer, transport, électricité…). Elle apparaît dans le point de caisse.',
+        '<button class="btn orange" onclick="nouvelleDepense()">+ Nouvelle dépense</button>')) + '</div>';
+}
+
+function nouvelleDepense(){
+  const d = D.data;
+  modale('Nouvelle dépense',
+    '<div class="grille">' +
+      '<div><label>Catégorie</label><select id="d-cat"><option value="">— Choisir —</option>' +
+        d.categories.map(c => '<option>' + esc(c) + '</option>').join('') + '</select></div>' +
+      '<div><label>Date</label>' + (d.gerant ? '<input id="d-date" type="date" value="' + aujourdhui() + '" max="' + aujourdhui() + '">' :
+        '<input id="d-date" value="Aujourd\'hui" disabled>') + '</div>' +
+    '</div>' +
+    '<label>Libellé</label><input id="d-lib" placeholder="Ex. : facture électricité octobre">' +
+    aide(d.gerant ? 'La dépense est comptée dans le tableau de bord à la date choisie.' : 'La dépense est enregistrée à la date d\'aujourd\'hui, à votre nom.') +
+    '<div class="grille">' +
+      '<div><label>Montant</label><input id="d-mt" inputmode="decimal"></div>' +
+      '<div><label>Mode de paiement</label><select id="d-mode">' + d.modes.map(m => '<option>' + esc(m) + '</option>').join('') + '</select></div>' +
+    '</div>' +
+    '<label>Bénéficiaire (facultatif)</label><input id="d-ben" placeholder="Ex. : CIE, propriétaire, transporteur…">',
+    async () => {
+      D.data = await api('apiEnregistrerDepense', S.token, { categorie: $('d-cat').value, date: $('d-date').value,
+        libelle: $('d-lib').value, montant: $('d-mt').value, mode: $('d-mode').value, beneficiaire: $('d-ben').value, mois: D.mois });
+      toast('Dépense enregistrée'); dessinerDepenses();
+    });
+}
+
+function detailDepense(numero){
+  const x = D.data.depenses.find(y => y.numero === numero);
+  if (!x) return;
+  const annulee = x.statut === 'Annulée';
+  $('modale-zone').innerHTML = '<div class="voile"><div class="modale"><h3>Dépense ' + esc(x.numero) +
+    (annulee ? ' <span class="badge non">Annulée</span>' : '') + '</h3>' +
+    '<table><tbody>' +
+      [['Date', x.date], ['Catégorie', x.categorie], ['Libellé', x.libelle], ['Montant', fcfa(x.montant)],
+       ['Mode de paiement', x.mode], ['Bénéficiaire', x.beneficiaire || '—'], ['Saisi par', x.utilisateur]]
+        .map(r => '<tr style="cursor:default"><td style="color:var(--gris)">' + r[0] + '</td><td><b>' + esc(r[1]) + '</b></td></tr>').join('') +
+    '</tbody></table>' +
+    (annulee ? '<p style="color:var(--err);margin-top:12px">Motif d\'annulation : ' + esc(x.motif) + '</p>' :
+      (D.data.gerant ? '<details style="margin-top:16px"><summary style="cursor:pointer;color:var(--err)">Annuler cette dépense</summary>' +
+        '<label>Motif de l\'annulation</label><input id="d-motif">' +
+        '<div class="actions"><button class="btn" style="background:var(--err)" onclick="annulerDepense(\'' + esc(x.numero) + '\', this)">Confirmer l\'annulation</button></div></details>' : '')) +
+    '<div class="msg" id="mod-msg"></div><div class="actions"><button class="btn second" onclick="fermerModale()">Fermer</button></div></div></div>';
+}
+
+async function annulerDepense(numero, btn){
+  await occupe(btn, async () => {
+    try {
+      D.data = await api('apiAnnulerDepense', S.token, numero, $('d-motif').value, D.mois);
+      fermerModale(); toast('Dépense ' + numero + ' annulée'); dessinerDepenses();
+    } catch(e) { $('mod-msg').textContent = msgErreur(e); }
+  });
+}
+
+
+/* ===== Étape 7 : Stock & inventaire ===== */
+const K = { data: null, recherche: '', famille: '', bas: false, mode: 'article', tri: 'ancien', depot: '', mvt: null, tr: null };
+
+async function vueStock(){
+  await charger('stock', () => api('apiStock', S.token),
+    (d, maj) => { K.data = d; if (!maj || libre()) dessinerStock(); }, 'Stock & inventaire');
+}
+
+function filtreStock(){
+  const r = K.recherche.trim().toLowerCase();
+  return K.data.articles.filter(a => (!K.famille || a.famille === K.famille) && (!K.bas || a.stock <= a.seuil) && (!K.depot || stockDe(a) !== 0) &&
+    (!r || (a.designation + ' ' + a.code).toLowerCase().indexOf(r) >= 0));
+}
+
+function stockDe(a){ return K.depot ? (a.depots[K.depot] || 0) : a.stock; }
+function nomDepot(code){ const x = ((K.data && K.data.depots) || []).find(d => d.code === code); return x ? x.nom : code; }
+
+function dessinerStock(){
+  const d = K.data, g = d.gerant, arts = d.articles;
+  if (K.depot && !(d.depots || []).some(x => x.code === K.depot)) K.depot = '';
+  const bas = arts.filter(a => a.stock > 0 && a.stock <= a.seuil).length, rupture = arts.filter(a => a.stock <= 0).length;
+  const va = arts.reduce((s, a) => s + (K.depot ? Math.round(stockDe(a) * a.pa) : a.valeurAchat), 0);
+  const vv = arts.reduce((s, a) => s + (K.depot ? Math.round(stockDe(a) * a.pv) : a.valeurVente), 0);
+  const ou = K.depot ? ' — ' + esc(nomDepot(K.depot)) : '';
+  const tete = '<h2>Stock & inventaire</h2><div class="stats">' +
+      '<div class="stat"><small>Articles actifs</small><b>' + arts.length + '</b></div>' +
+      '<div class="stat"><small>Stock bas</small><b style="color:' + (bas ? 'var(--orange)' : 'var(--ok)') + '">' + bas + '</b></div>' +
+      '<div class="stat"><small>En rupture</small><b style="color:' + (rupture ? 'var(--err)' : 'var(--ok)') + '">' + rupture + '</b></div>' +
+      (g ? '<div class="stat"><small>Valeur du stock' + ou + ' (prix d\'achat)</small><b>' + fcfa(va) + '</b></div>' +
+           '<div class="stat"><small>Valeur du stock' + ou + ' (prix de vente)</small><b>' + fcfa(vv) + '</b></div>' : '') +
+    '</div><div class="onglets">' +
+      [['article', 'Stock par article'], ['lots', 'Par arrivage (lots)'], ['transferts', 'Transferts entre dépôts']].map(o =>
+        '<button class="' + (K.mode === o[0] ? 'actif' : '') + '" onclick="K.mode=\'' + o[0] + '\';dessinerStock()">' + o[1] + '</button>').join('') +
+    '</div>';
+  if (K.mode === 'transferts') {
+    $('vue').innerHTML = tete + '<div class="bloc"><div class="entete-bloc"><span style="color:var(--gris)">' + (d.transferts || []).length + ' transfert(s) récent(s)</span>' +
+      (d.peutAjuster ? '<button class="btn orange" onclick="nouveauTransfert()">+ Nouveau transfert</button>' : '') + '</div><div id="k-liste"></div></div>';
+    return listeTransferts();
+  }
+  $('vue').innerHTML = tete + (K.mode === 'lots' ? astuce('lots', '<b>Comment lire les lots :</b> chaque livraison est un lot daté. Les ventes puisent d\'abord dans le lot le plus ancien ; '
+        + 'un âge en <b>orange</b> signale un lot en stock depuis plus de 90 jours.') : barreDepots()) +
+    '<div class="bloc"><div class="entete-bloc" style="flex-wrap:wrap">' +
+      '<input placeholder="Rechercher un article…" style="max-width:260px" value="' + esc(K.recherche) + '" oninput="K.recherche=this.value;listeStock()">' +
+      '<select style="max-width:200px" onchange="K.famille=this.value;listeStock()"><option value="">Toutes les familles</option>' +
+        d.familles.map(f => '<option' + (f === K.famille ? ' selected' : '') + '>' + esc(f) + '</option>').join('') + '</select>' +
+      (K.mode === 'lots'
+        ? '<select style="max-width:220px" onchange="K.tri=this.value;listeStock()">' +
+            [['ancien', 'Plus anciens d\'abord'], ['recent', 'Plus récents d\'abord']].map(o =>
+              '<option value="' + o[0] + '"' + (K.tri === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select>'
+        : '<label style="display:flex;gap:6px;align-items:center;margin:0;font-weight:normal;color:var(--texte)"><input type="checkbox" style="width:auto"' +
+            (K.bas ? ' checked' : '') + ' onchange="K.bas=this.checked;listeStock()"> Stock bas uniquement</label>') +
+      '<span style="flex:1"></span><button class="btn second" onclick="imprimerInventaire()">Imprimer la fiche d\'inventaire</button>' +
+    '</div><div id="k-liste"></div></div>';
+  listeStock();
+}
+
+/** Cartes « emplacements » : cliquer sur un dépôt n'affiche que ce qu'il contient. */
+function barreDepots(){
+  const d = K.data, deps = (d.depots || []).filter(x => x.actif === 'Oui' || d.articles.some(a => a.depots[x.code]));
+  if (deps.length < 2) return d.gerant ? astuce('depots', '<b>Plusieurs lieux de stockage ?</b> Créez vos dépôts dans <b>Paramètres → Dépôts</b> : '
+    + 'vous verrez ici le stock de chacun et pourrez transférer la marchandise vers le magasin.') : '';
+  const carte = (code, nom, n, ic) => '<button class="depot-carte' + (K.depot === code ? ' actif' : '') + '" onclick="K.depot=\'' + code + '\';dessinerStock()">' +
+    '<span class="pt">' + ico(ic, 17, 'var(--bleu2)') + '</span><span><b>' + esc(nom) + '</b><small>' + n + ' article(s) en stock</small></span></button>';
+  return '<div class="depots-barre">' + carte('', 'Tous les emplacements', d.articles.filter(a => a.stock > 0).length, 'boite') +
+    deps.map(x => carte(x.code, x.nom, d.articles.filter(a => (a.depots[x.code] || 0) > 0).length, x.code === MAG ? 'panier' : 'entrepot')).join('') + '</div>';
+}
+
+function listeStock(){
+  if (K.mode === 'lots') return listeLots();
+  if (K.mode === 'transferts') return listeTransferts();
+  const d = K.data, g = d.gerant, l = filtreStock();
+  const plusieurs = (d.depots || []).length > 1;
+  if (!l.length) {
+    $('k-liste').innerHTML = K.depot
+      ? etatVide('entrepot', 'Rien à afficher dans « ' + esc(nomDepot(K.depot)) + ' »', 'Aucun article en stock ne correspond dans cet emplacement.')
+      : '<div class="vide">Aucun article.</div>';
+    return;
+  }
+  $('k-liste').innerHTML = '<p style="color:var(--gris);margin:0 0 10px">' + (K.depot ? '<b style="color:var(--bleu)">' + esc(nomDepot(K.depot)) + '</b> · ' : '') +
+    'Cliquez sur un article pour voir ses mouvements' + (d.peutAjuster ? (plusieurs ? ', le transférer' : '') + ' ou corriger son stock après comptage' : '') + '.</p>' +
+    '<div style="overflow-x:auto"><table><thead><tr><th>Code</th><th>Désignation</th><th class="col-mobile-cache">Famille</th>' +
+    '<th>' + (K.depot ? 'Quantité ici' : 'Stock total') + '</th>' +
+    '<th class="col-mobile-cache">Seuil</th>' + (g ? '<th class="col-mobile-cache">Valeur (achat)</th>' : '') + '</tr></thead><tbody>' +
+    l.map(a => {
+      const q = stockDe(a);
+      const cls = K.depot ? (q > 0 ? 'oui' : 'non') : (a.stock <= a.seuil ? 'non' : 'oui');
+      const rep = plusieurs && !K.depot ? (d.depots || []).filter(x => a.depots[x.code]).map(x =>
+        '<span>' + esc(x.nom) + ' : <b>' + a.depots[x.code].toLocaleString('fr-FR') + '</b></span>').join(' · ') : '';
+      return '<tr onclick="mouvementsArticle(\'' + esc(a.code) + '\')"><td>' + esc(a.code) + '</td><td><b>' + esc(a.designation) + '</b>' +
+        (rep ? '<small class="repartition">' + rep + '</small>' : '') + '</td>' +
+        '<td class="col-mobile-cache">' + esc(a.famille) + '</td>' +
+        '<td><span class="badge ' + cls + '">' + (q <= 0 && !K.depot ? 'Rupture' : q.toLocaleString('fr-FR') + ' ' + esc(a.unite.toLowerCase())) + '</span></td>' +
+        '<td class="col-mobile-cache">' + a.seuil + '</td>' +
+        (g ? '<td class="col-mobile-cache">' + fcfa(K.depot ? Math.round(q * a.pa) : a.valeurAchat) + '</td>' : '') + '</tr>';
+    }).join('') + '</tbody></table></div>';
+}
+
+function listeTransferts(){
+  const l = K.data.transferts || [];
+  if (!l.length) {
+    $('k-liste').innerHTML = etatVide('fleches', 'Aucun transfert pour le moment',
+      'Un transfert déplace de la marchandise d\'un dépôt à un autre, par exemple du dépôt vers le magasin pour pouvoir la vendre. Le stock total ne change pas.',
+      K.data.peutAjuster ? '<button class="btn orange" onclick="nouveauTransfert()">+ Nouveau transfert</button>' : '');
+    return;
+  }
+  $('k-liste').innerHTML = '<div style="overflow-x:auto"><table><thead><tr><th>N°</th><th>Date</th><th>Trajet</th><th>Articles</th><th class="col-mobile-cache">Par</th></tr></thead><tbody>' +
+    l.map(t => '<tr style="cursor:default"><td>' + esc(t.numero) + '</td><td style="white-space:nowrap">' + esc(t.date) + '</td>' +
+      '<td><b>' + esc(t.de) + '</b> → <b>' + esc(t.vers) + '</b>' + (t.motif ? '<br><small style="color:var(--gris)">' + esc(t.motif) + '</small>' : '') + '</td>' +
+      '<td>' + t.lignes.map(x => esc(x.designation) + ' : <b>' + x.quantite.toLocaleString('fr-FR') + '</b> ' + esc(String(x.unite).toLowerCase())).join('<br>') + '</td>' +
+      '<td class="col-mobile-cache">' + esc(t.utilisateur) + '</td></tr>').join('') +
+    '</tbody></table></div>';
+}
+
+/** Formulaire de transfert. code : article pré-choisi (depuis sa fiche). */
+function nouveauTransfert(code){
+  const d = K.data, deps = (d.depots || []).filter(x => x.actif === 'Oui');
+  if (deps.length < 2) return toast(d.gerant ? 'Créez d\'abord un autre dépôt dans Paramètres → Dépôts.' : 'Il n\'y a qu\'un seul emplacement : le gérant doit d\'abord créer les dépôts.', true);
+  const a = code ? d.articles.find(x => x.code === code) : null;
+  const autre = (deps.find(x => x.code !== MAG) || deps[0]).code;
+  const de = (a && Object.keys(a.depots).find(c => c !== MAG && a.depots[c] > 0 && deps.some(x => x.code === c))) ||
+             (K.depot && K.depot !== MAG && deps.some(x => x.code === K.depot) ? K.depot : autre);
+  const vers = de === MAG ? autre : MAG;
+  K.tr = { de: de, lignes: [{ article: code || '', qte: '' }] };
+  const opts = v => deps.map(x => '<option value="' + esc(x.code) + '"' + (x.code === v ? ' selected' : '') + '>' + esc(x.nom) + '</option>').join('');
+  fermerModale();
+  modale('Nouveau transfert',
+    aide('Déplace la marchandise d\'un emplacement à un autre : le stock total ne change pas. Pour être vendu, un article doit être au <b>magasin</b>.') +
+    '<div class="grille"><div><label>De (départ)</label><select id="tr-de" onchange="K.tr.de=this.value;dessinerLignesTransfert()">' + opts(de) + '</select></div>' +
+    '<div><label>Vers (arrivée)</label><select id="tr-vers">' + opts(vers) + '</select></div></div>' +
+    '<label style="margin-top:16px">Articles à déplacer</label><div id="tr-lignes"></div>' +
+    '<button class="btn second" onclick="K.tr.lignes.push({article:\'\',qte:\'\'});dessinerLignesTransfert()">+ Ajouter une ligne</button>' +
+    '<label>Motif (facultatif)</label><input id="tr-motif" placeholder="Ex. : réassort de la boutique">',
+    async () => {
+      const r = await api('apiTransferer', S.token, { de: $('tr-de').value, vers: $('tr-vers').value, lignes: K.tr.lignes, motif: $('tr-motif').value });
+      K.data = r; K.mode = 'transferts'; toast('Transfert ' + r.numeroCree + ' enregistré'); dessinerStock();
+    }, true);
+  dessinerLignesTransfert();
+}
+
+function dessinerLignesTransfert(){
+  const d = K.data, de = K.tr.de, dispo = a => a.depots[de] || 0;
+  const arts = d.articles.filter(a => dispo(a) > 0 || K.tr.lignes.some(l => l.article === a.code));
+  $('tr-lignes').innerHTML = K.tr.lignes.map((l, i) => {
+    const a = d.articles.find(x => x.code === l.article);
+    return '<div class="ligne-achat ligne-tr">' +
+      '<select onchange="K.tr.lignes[' + i + '].article=this.value;dessinerLignesTransfert()"><option value="">— Article —</option>' +
+        arts.map(x => '<option value="' + esc(x.code) + '"' + (x.code === l.article ? ' selected' : '') + '>' + esc(x.designation) + ' (' + dispo(x).toLocaleString('fr-FR') + ')</option>').join('') + '</select>' +
+      '<input inputmode="decimal" placeholder="Qté" value="' + esc(l.qte) + '" oninput="K.tr.lignes[' + i + '].qte=this.value">' +
+      '<span class="st" style="font-weight:normal;color:var(--gris)">' + (a ? 'Disponible : <b style="color:var(--texte)">' + dispo(a).toLocaleString('fr-FR') + '</b>' : '') + '</span>' +
+      '<button class="btn second" title="Retirer la ligne" onclick="K.tr.lignes.splice(' + i + ',1);if(!K.tr.lignes.length)K.tr.lignes.push({article:\'\',qte:\'\'});dessinerLignesTransfert()">✕</button></div>';
+  }).join('') + (arts.length ? '' : '<p style="color:var(--gris);margin:0 0 10px">Aucun article en stock dans cet emplacement.</p>');
+}
+
+async function mouvementsArticle(code){
+  let d;
+  try { d = await api('apiMouvements', S.token, code); } catch(e) { return toast(msgErreur(e), true); }
+  K.mvt = d;
+  const u = d.unite.toLowerCase(), plusieurs = d.depots.length > 1 || d.parDepot.length > 1, peut = K.data.peutAjuster;
+  const depDef = K.depot && d.depots.some(x => x.code === K.depot) ? K.depot : MAG;
+  $('modale-zone').innerHTML = '<div class="voile"><div class="modale large">' +
+    '<h3>' + esc(d.designation) + ' <small style="color:var(--gris);font-weight:normal">' + esc(d.code) + '</small></h3>' +
+    '<p style="margin:4px 0 12px">Stock ' + (plusieurs ? 'total' : 'actuel') + ' : <b style="font-size:18px;color:var(--bleu)">' + d.stock.toLocaleString('fr-FR') + ' ' + esc(u) + '</b></p>' +
+    (plusieurs ? '<div class="depots-barre">' + d.parDepot.map(x => '<div class="depot-carte" style="cursor:default"><span class="pt">' +
+        ico(x.code === MAG ? 'panier' : 'entrepot', 17, 'var(--bleu2)') + '</span><span><b>' + esc(x.nom) + '</b><small>' +
+        x.qte.toLocaleString('fr-FR') + ' ' + esc(u) + '</small></span></div>').join('') +
+      (peut && d.depots.length > 1 ? '<button class="btn second btn-ico" onclick="nouveauTransfert(\'' + esc(d.code) + '\')">' + ico('fleches', 16) + ' Transférer</button>' : '') + '</div>' : '') +
+    (peut ? '<details style="margin-bottom:16px"><summary style="cursor:pointer;color:var(--orange);font-weight:bold">Corriger le stock après comptage (inventaire)</summary>' +
+      aide('À utiliser après avoir compté l\'article, jamais pour une livraison (passez par Achats) ni pour un déplacement (faites un transfert).') +
+      '<div class="grille">' +
+        (d.depots.length > 1 ? '<div><label>Emplacement compté</label><select id="k-depot" onchange="ecartInventaire()">' +
+          d.depots.map(x => '<option value="' + esc(x.code) + '"' + (x.code === depDef ? ' selected' : '') + '>' + esc(x.nom) + '</option>').join('') + '</select></div>' : '') +
+        '<div><label>Quantité comptée</label><input id="k-compte" inputmode="decimal" oninput="ecartInventaire()">' +
+          '<small id="k-theo" style="display:block;color:var(--gris);margin-top:4px"></small></div>' +
+        '<div><label>Écart</label><p id="k-ecart" style="font-weight:bold;margin:10px 0 0">—</p></div></div>' +
+      '<label>Motif</label><input id="k-motif" placeholder="Ex. : inventaire mensuel, article abîmé, perte…">' +
+      '<div class="actions"><button class="btn orange" onclick="validerAjustement(\'' + esc(d.code) + '\', this)">Valider la correction</button></div></details>' : '') +
+    '<div style="overflow-x:auto;max-height:50vh"><table><thead><tr><th>Date</th><th>Opération</th><th class="col-mobile-cache">Référence</th>' +
+      '<th style="text-align:right">Entrée</th><th style="text-align:right">Sortie</th><th style="text-align:right">Stock après</th></tr></thead><tbody>' +
+      d.mouvements.map(x => '<tr style="cursor:default"><td>' + esc(x.date) + '</td><td>' + esc(x.type) +
+        (plusieurs && x.lieu ? '<br><small style="color:var(--gris)">' + esc(x.lieu) + '</small>' : '') + '</td><td class="col-mobile-cache">' + esc(x.ref) + '</td>' +
+        '<td style="text-align:right;color:var(--ok)">' + (x.deplace ? '<span style="color:var(--gris)">↔ ' + x.deplace.toLocaleString('fr-FR') + '</span>' : x.qte > 0 ? '+' + x.qte.toLocaleString('fr-FR') : '') + '</td>' +
+        '<td style="text-align:right;color:var(--err)">' + (x.qte < 0 ? x.qte.toLocaleString('fr-FR') : '') + '</td>' +
+        '<td style="text-align:right"><b>' + x.solde.toLocaleString('fr-FR') + '</b></td></tr>').join('') +
+    '</tbody></table></div>' +
+    '<div class="msg" id="mod-msg"></div><div class="actions"><button class="btn second" onclick="fermerModale()">Fermer</button></div></div></div>';
+  if (peut) ecartInventaire();
+}
+
+function listeLots(){
+  const d = K.data, g = d.gerant, r = K.recherche.trim().toLowerCase();
+  const l = (d.lots || []).filter(x => (!K.famille || x.famille === K.famille) &&
+      (!r || (x.designation + ' ' + x.code + ' ' + x.ref).toLowerCase().indexOf(r) >= 0))
+    .sort((a, b) => (K.tri === 'recent' ? -1 : 1) * ((a.iso < b.iso ? -1 : a.iso > b.iso ? 1 : 0) || (a.code === b.code ? a.n - b.n : 0)) ||
+      a.designation.localeCompare(b.designation) || a.n - b.n);
+  if (!l.length) { $('k-liste').innerHTML = etatVide('lots', 'Aucun lot en stock', 'Un lot se crée à chaque livraison enregistrée dans Achats & livraisons.'); return; }
+  const anciens = l.filter(x => x.age >= 90).length;
+  $('k-liste').innerHTML = '<p style="color:var(--gris);margin:0 0 10px">' + l.length + ' lot(s) en stock. Les ventes puisent d\'abord dans le lot le plus ancien.' +
+      (anciens ? ' · <b style="color:var(--orange)">' + anciens + ' lot(s) de plus de 90 jours</b>' : '') + '</p>' +
+    '<div style="overflow-x:auto"><table><thead><tr><th>Arrivée</th><th>Lot</th><th>Article</th>' +
+      (g ? '<th class="col-mobile-cache">Fournisseur</th>' : '') + '<th class="col-mobile-cache">Reçu</th><th>Reste</th><th>Âge</th>' +
+      (g ? '<th class="col-mobile-cache">Valeur (achat)</th>' : '') + '</tr></thead><tbody>' +
+    l.map(x => '<tr onclick="mouvementsArticle(\'' + esc(x.code) + '\')"><td>' + esc(x.date) + '</td><td>' + esc(x.ref) + '</td>' +
+      '<td><b>' + esc(x.designation) + '</b><br><small style="color:var(--gris)">' + esc(x.famille) + '</small></td>' +
+      (g ? '<td class="col-mobile-cache">' + esc(x.fournisseur || '—') + '</td>' : '') +
+      '<td class="col-mobile-cache">' + x.recu.toLocaleString('fr-FR') + '</td>' +
+      '<td><span class="badge oui">' + x.reste.toLocaleString('fr-FR') + ' ' + esc(x.unite.toLowerCase()) + '</span></td>' +
+      '<td style="white-space:nowrap' + (x.age >= 90 ? ';color:var(--orange);font-weight:bold' : '') + '">' + x.age + ' j</td>' +
+      (g ? '<td class="col-mobile-cache">' + fcfa(x.valeur) + '</td>' : '') + '</tr>').join('') +
+    '</tbody></table></div>';
+}
+
+/* ===== Page Aide ===== */
+const GUIDES = [
+  { ico: 'panier', titre: 'Faire une vente', sous: 'De la recherche d\'article à la facture imprimée', pour: 'tous', etapes: [
+    'Ouvrez <b>Caisse & ventes → Nouvelle vente</b>.',
+    'Tapez 2 ou 3 lettres du nom : choisissez l\'article à la souris, ou avec <b>↓ ↑</b> puis <b>Entrée</b>. Le stock disponible est affiché.',
+    'Ajustez la quantité (décimales possibles pour les articles au mètre : <b>3,5</b>).',
+    'Choisissez le client (ou « Client de passage ») et le mode de paiement.',
+    '<b>Montant versé</b> : vide = payé exactement ; plus = monnaie à rendre ; moins = crédit.',
+    'Cliquez sur <b>Valider la vente</b>, puis <b>Imprimer la facture</b>.'],
+    note: 'Impossible de vendre plus que le stock : la quantité passe en rouge et la vente est refusée.' },
+  { ico: 'plus', titre: 'Compléter une vente', sous: 'Le client ajoute des articles après coup', pour: 'tous', etapes: [
+    'Ouvrez la facture : juste après la vente, ou depuis l\'onglet <b>Ventes</b>.',
+    'Cliquez sur <b>+ Ajouter des articles</b>.',
+    'Ajoutez les articles, indiquez le montant versé, puis <b>Ajouter à la facture</b>.',
+    'La même facture se réimprime avec tous les articles.'],
+    note: 'Ventes du jour uniquement. La caissière ne complète que ses propres ventes ; pour retirer un article, le gérant annule la vente.' },
+  { ico: 'portefeuille', titre: 'Vente à crédit et paiement d\'une dette', sous: 'Suivre ce que les clients doivent', pour: 'tous', etapes: [
+    'À la caisse, choisissez le client (ou créez-le avec <b>+</b>) et indiquez un montant versé inférieur au total.',
+    'Le reste dû apparaît dans <b>Impayés & règlements</b> et dans la colonne « Doit » des clients.',
+    'Quand le client paie : <b>Impayés</b> → cliquez sur son nom → montant → <b>Enregistrer</b>.',
+    'Imprimez le reçu et remettez-le au client.'],
+    note: 'Un paiement règle d\'abord la facture la plus ancienne. Un « client de passage » ne peut pas acheter à crédit.' },
+  { ico: 'camion', titre: 'Recevoir une livraison', sous: 'Enregistrer un achat : le stock augmente', pour: 'gerant', etapes: [
+    'Ouvrez <b>Achats & livraisons → + Nouvel achat</b>.',
+    'Choisissez le fournisseur, la <b>date d\'arrivée réelle</b> et, si vous avez plusieurs dépôts, le <b>dépôt de réception</b>.',
+    'Une ligne par article : quantité et prix d\'achat (pré-rempli).',
+    'Indiquez le montant payé ; le reste est suivi dans Impayés → fournisseurs.',
+    '<b>Enregistrer</b> : le stock augmente et un lot daté est créé.'],
+    note: 'Ne modifiez jamais le « Stock de départ » d\'un article pour ajouter de la marchandise : passez toujours par un achat.' },
+  { ico: 'lots', titre: 'Suivre le stock et les arrivages', sous: 'Stock total, alertes et lots', pour: 'tous', etapes: [
+    '<b>Stock & inventaire</b> affiche le stock total, les articles en stock bas et en rupture.',
+    'Cliquez sur un article pour voir tout son historique : achats, ventes, corrections.',
+    'L\'onglet <b>Par arrivage (lots)</b> montre ce qui reste de chaque livraison et depuis combien de jours.',
+    'Triez du plus ancien au plus récent pour écouler en priorité le vieux stock.'],
+    note: 'Les ventes puisent d\'abord dans le lot le plus ancien. Un âge en orange = plus de 90 jours.' },
+  { ico: 'entrepot', titre: 'Dépôts et transferts', sous: 'Ranger ailleurs, vendre au magasin', pour: 'tous', etapes: [
+    'Le gérant crée ses dépôts dans <b>Paramètres → Dépôts</b>. Le <b>magasin</b> est le point de vente.',
+    'À chaque livraison, choisissez le <b>dépôt de réception</b> : la marchandise y est rangée.',
+    'Dans <b>Stock & inventaire</b>, cliquez sur un emplacement pour ne voir que ce qu\'il contient.',
+    'Pour vendre, la marchandise doit être au magasin : <b>Transferts entre dépôts → + Nouveau transfert</b>, du dépôt vers le magasin.'],
+    note: 'Un transfert ne change pas le stock total. À la caisse, « + N en dépôt » signale qu\'il en reste ailleurs qu\'au magasin.' },
+  { ico: 'inventaire', titre: 'Faire un inventaire', sous: 'Comparer le stock réel au logiciel', pour: 'stock', etapes: [
+    'Dans <b>Stock & inventaire</b>, choisissez l\'emplacement (et éventuellement la famille), puis <b>Imprimer la fiche d\'inventaire</b>.',
+    'Comptez les articles en magasin et notez les quantités.',
+    'Pour chaque écart : cliquez sur l\'article → <b>Corriger le stock après comptage</b> → emplacement, quantité comptée et motif.'],
+    note: 'Uniquement après un comptage. Chaque correction reste visible dans l\'historique de l\'article.' },
+  { ico: 'recu', titre: 'Noter une dépense', sous: 'Loyer, transport, électricité…', pour: 'tous', etapes: [
+    'Ouvrez <b>Dépenses → + Nouvelle dépense</b>.',
+    'Choisissez la catégorie, puis le libellé, le montant et le mode de paiement.',
+    'Enregistrez : la dépense est déduite du point de caisse et du bénéfice.'],
+    note: 'La caissière enregistre à la date du jour ; le gérant peut choisir la date et annuler une dépense.' },
+  { ico: 'etiquette', titre: 'Créer un article', sous: 'Ajouter un produit au catalogue', pour: 'gerant', etapes: [
+    'Ouvrez <b>Articles → + Ajouter un article</b>.',
+    'Désignation, famille, unité, prix d\'achat et prix de vente : la marge se calcule en direct.',
+    'Stock de départ : uniquement la quantité présente le jour de la création.',
+    'Seuil d\'alerte : le stock minimum avant l\'alerte « stock bas ».'],
+    note: 'Chaque taille ou modèle est un article séparé (ex. « Matelas 1 place » et « Matelas 2 places »).' },
+  { ico: 'cle', titre: 'Personnel et codes PIN', sous: 'Ajouter un employé, changer un code', pour: 'gerant', etapes: [
+    'Ouvrez <b>Paramètres → Personnel → + Ajouter un employé</b>.',
+    'Nom, fonction (caissière, magasinier…) et code PIN de 4 à 6 chiffres.',
+    'Code oublié : ouvrez la fiche de l\'employé et tapez un nouveau code.',
+    'Un employé qui part : passez « Actif » à <b>Non</b> (son historique est conservé).'],
+    note: 'Ne partagez jamais votre code PIN. Cliquez sur « Quitter » avant de laisser un poste.' },
+  { ico: 'graphe', titre: 'Lire le tableau de bord', sous: 'Chiffre d\'affaires, bénéfice, caisse', pour: 'gerant', etapes: [
+    'Choisissez la période : aujourd\'hui, semaine, mois, ou des dates précises.',
+    '<b>Bénéfice net</b> = chiffre d\'affaires − coût des articles vendus − dépenses.',
+    'Le <b>point de caisse</b> donne l\'argent attendu par mode de paiement : comparez avec la caisse réelle.',
+    'Le <b>bilan par caissière</b> montre les ventes, encaissements et dépenses de chacune.'],
+    note: 'Le rapport complet s\'imprime avec « Imprimer le rapport ».' },
+  { ico: 'imprimante', titre: 'Imprimer proprement', sous: 'Factures, reçus, rapports', pour: 'tous', etapes: [
+    'Cliquez sur le bouton <b>Imprimer</b> (facture, reçu, fiche d\'inventaire ou rapport).',
+    'Choisissez votre imprimante et le format <b>A4</b>.',
+    'Dans « Plus de paramètres », décochez <b>En-têtes et pieds de page</b>.'],
+    note: 'Pour garder une copie numérique, choisissez « Enregistrer au format PDF » comme imprimante.' },
+  { ico: 'horsligne', titre: 'Travailler sans internet', sous: 'La caisse continue pendant une coupure', pour: 'tous', etapes: [
+    'En haut, la pastille indique <b>En ligne</b> ou <b>Hors ligne</b>.',
+    'Hors ligne, vendez normalement : la facture reçoit un <b>numéro provisoire</b> (HL-…) et peut être imprimée.',
+    'Au retour d\'internet, les ventes partent toutes seules ; la facture reçoit alors son numéro définitif (FAC…).',
+    'Cliquez sur la pastille pour voir les ventes en attente, réimprimer une facture ou forcer l\'envoi.'],
+    note: 'Sans internet, seuls les comptes déjà connectés sur cet appareil peuvent ouvrir la caisse. Les achats, transferts et réglages attendent le retour de la connexion.' },
+  { ico: 'bouclier', titre: 'Bonnes habitudes', sous: 'Sécurité et données', pour: 'tous', etapes: [
+    'Cliquez sur <b>Quitter</b> en fin de journée, surtout sur un poste partagé.',
+    'Après une mise à jour du logiciel, rechargez la page (<b>F5</b>).',
+    'Rien ne s\'efface : une opération se corrige par une annulation avec motif.'],
+    note: 'Le gérant peut faire une copie de sauvegarde de la feuille Google à tout moment (Fichier → Créer une copie).' }
+];
+
+function vueAide(){
+  const g = S.user.fonction === 'Gérant', st = g || S.user.fonction === 'Magasinier';
+  const visibles = GUIDES.filter(x => x.pour === 'tous' || (x.pour === 'gerant' && g) || (x.pour === 'stock' && st));
+  $('vue').innerHTML = '<div class="aide-hero"><h2>Comment pouvons-nous vous aider ?</h2>' +
+      '<p>Les gestes essentiels du logiciel, en quelques étapes. Cliquez sur un sujet pour l\'ouvrir.</p>' +
+      '<input id="aide-rech" placeholder="Rechercher : vente, crédit, livraison, inventaire…" oninput="filtrerAide(this.value)"></div>' +
+    '<div class="aide-grille" id="aide-liste">' +
+    visibles.map((x, i) => '<details class="guide"' + (i === 0 ? ' open' : '') + '><summary><span class="pastille">' + ico(x.ico, 20, 'var(--bleu2)') + '</span>' +
+      '<span><span class="titre">' + x.titre + '</span>' + (x.pour === 'gerant' ? '<span class="etiquette">Gérant</span>' : '') +
+      '<small>' + x.sous + '</small></span></summary>' +
+      '<ol>' + x.etapes.map(e => '<li>' + e + '</li>').join('') + '</ol>' + (x.note ? aide(x.note) : '') + '</details>').join('') +
+    '</div><div id="aide-vide" class="cache">' + etatVide('ampoule', 'Aucun sujet trouvé', 'Essayez un autre mot : vente, stock, crédit, PIN…') + '</div>' +
+    '<p style="text-align:center;margin:18px 0 4px"><button class="btn second" onclick="reafficherAstuces()">Réafficher les astuces masquées</button></p>';
+}
+
+function filtrerAide(q){
+  q = String(q || '').trim().toLowerCase();
+  let n = 0;
+  document.querySelectorAll('#aide-liste .guide').forEach(d => {
+    const ok = !q || d.textContent.toLowerCase().indexOf(q) >= 0;
+    d.classList.toggle('cache', !ok);
+    if (ok) n++;
+    if (q && ok) d.open = true;
+  });
+  $('aide-vide').classList.toggle('cache', n > 0);
+}
+
+function ecartInventaire(){
+  const d = K.mvt;
+  if (!d || !$('k-compte')) return;
+  const dep = $('k-depot') ? $('k-depot').value : MAG;
+  const p = d.parDepot.find(x => x.code === dep), theo = p ? p.qte : 0;
+  $('k-theo').textContent = 'Selon le logiciel : ' + theo.toLocaleString('fr-FR') + ' ' + d.unite.toLowerCase();
+  const v = $('k-compte').value.trim(), e = $('k-ecart');
+  if (v === '') { e.textContent = '—'; e.style.color = ''; return; }
+  const ecart = Math.round((numVal(v) - theo) * 1000) / 1000;
+  e.textContent = (ecart > 0 ? '+' : '') + ecart.toLocaleString('fr-FR') + (ecart === 0 ? ' (aucun écart)' : ecart > 0 ? ' (surplus)' : ' (manquant)');
+  e.style.color = ecart < 0 ? 'var(--err)' : ecart > 0 ? 'var(--ok)' : 'var(--gris)';
+}
+
+async function validerAjustement(code, btn){
+  await occupe(btn, async () => {
+    try {
+      K.data = await api('apiAjusterStock', S.token, { article: code, compte: $('k-compte').value, motif: $('k-motif').value,
+        depot: $('k-depot') ? $('k-depot').value : MAG });
+      toast('Stock corrigé'); dessinerStock(); mouvementsArticle(code);
+    } catch(e) { $('mod-msg').textContent = msgErreur(e); }
+  });
+}
+
+function imprimerInventaire(){
+  const e = K.data.entreprise, l = filtreStock();
+  const jour = aujourdhui().split('-').reverse().join('/');
+  $('impression').innerHTML = '<div class="fact"><div class="ent"><div><h1>' + esc(e.nom) + '</h1>' +
+      (e.adresse ? '<div>' + esc(e.adresse) + '</div>' : '') + '</div>' +
+    '<div class="num"><div>FICHE D\'INVENTAIRE</div><b>' + jour + '</b>' + (K.depot ? '<div>Emplacement : ' + esc(nomDepot(K.depot)) + '</div>' : '') + (K.famille ? '<div>Famille : ' + esc(K.famille) + '</div>' : '') + '</div></div>' +
+    '<table><thead><tr><th>Code</th><th>Désignation</th><th>Unité</th><th style="text-align:right">Stock logiciel</th>' +
+      '<th style="width:120px">Stock compté</th><th style="width:90px">Écart</th></tr></thead><tbody>' +
+      l.map(a => '<tr><td>' + esc(a.code) + '</td><td>' + esc(a.designation) + '</td><td>' + esc(a.unite) + '</td>' +
+        '<td style="text-align:right">' + stockDe(a).toLocaleString('fr-FR') + '</td>' +
+        '<td style="border:1px solid #999"></td><td style="border:1px solid #999"></td></tr>').join('') +
+    '</tbody></table>' +
+    '<div class="pied"><span>Compté par : ............................................</span><span>Signature : ..............................</span></div></div>';
+  window.print();
+}
+
+
+/* ===== Étape 8 : Impayés & règlements ===== */
+const I = { data: null, type: 'Client', recu: null, recherche: '' };
+
+async function vueImpayes(){
+  const type = I.type;
+  await charger('impayes:' + type, () => api('apiImpayes', S.token, type),
+    (d, maj) => { I.data = d; if (!maj || libre()) dessinerImpayes(); }, 'Impayés & règlements');
+}
+
+function dessinerImpayes(){
+  const d = I.data, cli = d.type === 'Client';
+  const r = I.recherche.trim().toLowerCase();
+  const l = d.tiers.filter(t => !r || (t.nom + ' ' + t.telephone).toLowerCase().indexOf(r) >= 0);
+  $('vue').innerHTML = '<h2>Impayés & règlements</h2>' +
+    (d.gerant ? '<div class="onglets">' + [['Client', 'Clients qui me doivent'], ['Fournisseur', 'Ce que je dois aux fournisseurs']].map(o =>
+      '<button class="' + (d.type === o[0] ? 'actif' : '') + '" onclick="I.type=\'' + o[0] + '\';I.recherche=\'\';vueImpayes()">' + o[1] + '</button>').join('') + '</div>' : '') +
+    '<div class="stats">' +
+      '<div class="stat"><small>' + (cli ? 'Total que les clients vous doivent' : 'Total dû aux fournisseurs') + '</small><b style="color:var(--err)">' + fcfa(d.total) + '</b></div>' +
+      '<div class="stat"><small>' + (cli ? 'Clients débiteurs' : 'Fournisseurs à payer') + '</small><b>' + d.tiers.length + '</b></div>' +
+    '</div>' +
+    '<div class="bloc" style="margin-bottom:14px"><div class="entete-bloc"><input placeholder="Rechercher par nom ou téléphone…" style="max-width:300px" value="' +
+      esc(I.recherche) + '" oninput="I.recherche=this.value;dessinerImpayes();var e=this;setTimeout(function(){var x=document.querySelector(\'#vue input\');x.focus();x.setSelectionRange(99,99)},0)"></div>' +
+    (l.length ? '<p style="color:var(--gris);margin:0 0 10px">Cliquez sur une ligne pour voir le détail et enregistrer un paiement.</p>' +
+      '<div style="overflow-x:auto"><table><thead><tr><th>' + (cli ? 'Client' : 'Fournisseur') + '</th><th>Téléphone</th>' +
+      '<th class="col-mobile-cache">Total dû</th><th class="col-mobile-cache">Déjà réglé</th><th>Reste à payer</th></tr></thead><tbody>' +
+      l.map(t => '<tr onclick="ficheImpaye(\'' + esc(t.code) + '\')"><td><b>' + esc(t.nom) + '</b></td>' +
+        '<td>' + (t.telephone ? '<a href="tel:' + esc(t.telephone.replace(/\s/g, '')) + '" onclick="event.stopPropagation()">' + esc(t.telephone) + '</a>' : '') + '</td>' +
+        '<td class="col-mobile-cache">' + fcfa(t.du) + '</td><td class="col-mobile-cache">' + fcfa(t.regle) + '</td>' +
+        '<td style="color:var(--err)"><b>' + fcfa(t.solde) + '</b></td></tr>').join('') + '</tbody></table></div>' :
+      (d.tiers.length ? etatVide('portefeuille', 'Aucun résultat', 'Vérifiez le nom ou le numéro de téléphone.')
+        : etatVide('bouclier', cli ? 'Aucun impayé' : 'Rien à payer', cli ? 'Tous vos clients sont à jour. Les ventes à crédit apparaîtront ici.' : 'Vous ne devez rien aux fournisseurs.'))) +
+    '</div>' +
+    '<div class="bloc"><h3 style="margin:0 0 10px;color:var(--bleu);font-size:16px">' + (cli ? (d.gerant ? 'Derniers règlements reçus' : 'Mes encaissements') : 'Derniers paiements aux fournisseurs') + '</h3>' +
+    (d.reglements.length ? '<div style="overflow-x:auto;max-height:420px"><table><thead><tr><th>N°</th><th>Date</th><th>' + (cli ? 'Client' : 'Fournisseur') + '</th><th>Montant</th>' +
+      '<th class="col-mobile-cache">Mode</th><th class="col-mobile-cache">Par</th><th class="col-mobile-cache">Statut</th></tr></thead><tbody>' +
+      d.reglements.map(x => '<tr onclick="voirRecu(\'' + esc(x.numero) + '\')"' + (x.statut === 'Annulé' ? ' style="opacity:.55"' : '') + '>' +
+        '<td>' + esc(x.numero) + '</td><td>' + esc(x.date) + '</td><td>' + esc(x.tiers) + '</td><td><b>' + fcfa(x.montant) + '</b></td>' +
+        '<td class="col-mobile-cache">' + esc(x.mode) + '</td><td class="col-mobile-cache">' + esc(x.utilisateur) + '</td>' +
+        '<td class="col-mobile-cache"><span class="badge ' + (x.statut === 'Annulé' ? 'non' : 'oui') + '">' + esc(x.statut) + '</span></td></tr>').join('') +
+      '</tbody></table></div>' : '<div class="vide">Aucun règlement enregistré.</div>') + '</div>';
+}
+
+function ficheImpaye(code){
+  const d = I.data, t = d.tiers.find(x => x.code === code), cli = d.type === 'Client';
+  if (!t) return;
+  modale((cli ? 'Client : ' : 'Fournisseur : ') + t.nom,
+    '<p style="margin:0 0 6px;color:var(--gris)">' + (t.telephone ? 'Tél. : ' + esc(t.telephone) : '') + '</p>' +
+    '<p style="font-size:18px;margin:0 0 14px">Reste à payer : <b style="color:var(--err);font-size:22px">' + fcfa(t.solde) + '</b></p>' +
+    '<b style="color:var(--bleu)">' + (cli ? 'Factures non soldées' : 'Achats non soldés') + '</b>' +
+    '<div style="overflow-x:auto;margin:6px 0 10px"><table><thead><tr><th>N°</th><th>Date</th><th style="text-align:right">Montant initial dû</th><th style="text-align:right">Reste</th></tr></thead><tbody>' +
+      t.docs.map(x => '<tr style="cursor:default"><td>' + esc(x.numero) + '</td><td>' + esc(x.date) + '</td><td style="text-align:right">' + fcfa(x.montant) +
+        '</td><td style="text-align:right;color:var(--err)"><b>' + fcfa(x.restant) + '</b></td></tr>').join('') +
+    '</tbody></table></div>' +
+    '<b style="color:var(--bleu)">' + (cli ? 'Encaisser un paiement' : 'Payer le fournisseur') + '</b>' +
+    aide('Le paiement règle d\'abord la facture la plus ancienne. Un reçu s\'affiche ensuite, prêt à imprimer.') +
+    '<div class="grille">' +
+      '<div><label>Montant</label><div style="display:flex;gap:8px"><input id="i-mt" inputmode="decimal">' +
+        '<button class="btn second" style="white-space:nowrap" onclick="$(\'i-mt\').value=' + t.solde + '">Tout</button></div></div>' +
+      '<div><label>Mode de paiement</label><select id="i-mode">' + d.modes.map(m => '<option>' + esc(m) + '</option>').join('') + '</select></div>' +
+    '</div><label>Note (facultatif)</label><input id="i-note" placeholder="Ex. : avance, solde facture…">',
+    async () => {
+      const r = await api('apiEnregistrerReglement', S.token, { type: d.type, tiers: t.code, montant: $('i-mt').value,
+        mode: $('i-mode').value, note: $('i-note').value });
+      I.data = r.data; dessinerImpayes(); toast('Règlement ' + r.recu.numero + ' enregistré');
+      setTimeout(() => afficherRecu(r.recu), 0);
+    }, true);
+}
+
+function htmlRecu(r){
+  const e = r.entreprise, dev = e.devise, cli = r.type === 'Client';
+  const m = n => (Number(n) || 0).toLocaleString('fr-FR') + ' ' + dev;
+  return (r.statut === 'Annulé' ? '<div class="annulee">REÇU ANNULÉ</div>' : '') +
+    '<div class="ent"><div><h1>' + esc(e.nom) + '</h1>' + (e.activite ? '<div>' + esc(e.activite) + '</div>' : '') +
+      (e.adresse ? '<div>' + esc(e.adresse) + '</div>' : '') + (e.tel ? '<div>Tél. : ' + esc(e.tel) + '</div>' : '') + '</div>' +
+    '<div class="num"><div>' + (cli ? 'REÇU DE PAIEMENT N°' : 'PAIEMENT FOURNISSEUR N°') + '</div><b>' + esc(r.numero) + '</b>' +
+      '<div>Date : ' + esc(r.date) + '</div><div>' + (cli ? 'Reçu par' : 'Payé par') + ' : ' + esc(r.utilisateur) + '</div></div></div>' +
+    '<p style="font-size:15px">' + (cli ? 'Reçu de' : 'Payé à') + ' : <b>' + esc(r.tiers) + '</b>' + (r.telephone ? ' — ' + esc(r.telephone) : '') + '</p>' +
+    '<p style="font-size:15px">La somme de : <b style="font-size:20px">' + m(r.montant) + '</b></p>' +
+    '<p>Soit : <b>' + esc(enLettres(r.montant)) + ' ' + (dev === 'FCFA' ? 'francs CFA' : esc(dev)) + '</b></p>' +
+    '<p>Mode de paiement : <b>' + esc(r.mode) + '</b>' + (r.note ? ' · ' + esc(r.note) : '') + '</p>' +
+    '<p>Solde restant dû à ce jour : <b style="color:' + (r.soldeRestant > 0 ? '#B3261E' : '#1E7B45') + '">' + m(r.soldeRestant) + '</b></p>' +
+    '<div class="pied"><span>Signature ' + (cli ? 'du client' : 'du fournisseur') + '</span><span>Signature et cachet</span></div>';
+}
+
+function afficherRecu(r, extra){
+  I.recu = r;
+  $('modale-zone').innerHTML = '<div class="voile"><div class="modale large"><div class="fact apercu">' + htmlRecu(r) + '</div>' + (extra || '') +
+    '<div class="msg" id="mod-msg"></div><div class="actions"><button class="btn second" onclick="fermerModale()">Fermer</button>' +
+    '<button class="btn orange" onclick="imprimerRecu()">Imprimer le reçu</button></div></div></div>';
+}
+
+function imprimerRecu(){
+  $('impression').innerHTML = '<div class="fact">' + htmlRecu(I.recu) + '</div>';
+  window.print();
+}
+
+async function voirRecu(numero){
+  let r;
+  try { r = await api('apiRecu', S.token, numero); } catch(e) { return toast(msgErreur(e), true); }
+  let extra = '';
+  if (r.statut === 'Annulé') extra = '<p style="color:var(--err);margin-top:12px">Motif d\'annulation : ' + esc(r.motif) + '</p>';
+  else if (I.data.gerant) extra = '<details style="margin-top:16px"><summary style="cursor:pointer;color:var(--err)">Annuler ce règlement</summary>' +
+    '<label>Motif de l\'annulation (le montant redeviendra dû)</label><input id="i-motif">' +
+    '<div class="actions"><button class="btn" style="background:var(--err)" onclick="annulerReglement(\'' + esc(r.numero) + '\', this)">Confirmer l\'annulation</button></div></details>';
+  afficherRecu(r, extra);
+}
+
+async function annulerReglement(numero, btn){
+  await occupe(btn, async () => {
+    try {
+      await api('apiAnnulerReglement', S.token, numero, $('i-motif').value);
+      fermerModale(); toast('Règlement ' + numero + ' annulé'); vueImpayes();
+    } catch(e) { $('mod-msg').textContent = msgErreur(e); }
+  });
+}
+
+/* ===== Étape 9 : Tableau de bord ===== */
+const B = { data: null, du: null, au: null };
+function isoDate(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function frDate(s){ return String(s || '').split('-').reverse().join('/'); }
+
+async function vueTableauBord(){
+  if (!B.au) { B.au = aujourdhui(); B.du = B.au.slice(0, 8) + '01'; }
+  const du = B.du, au = B.au;
+  await charger('tb:' + du + ':' + au, () => api('apiTableauBord', S.token, du, au),
+    (d, maj) => { B.data = d; if (!maj || libre()) dessinerTableauBord(); }, 'Tableau de bord');
+}
+
+function periodeTB(p){
+  const a = aujourdhui();
+  if (p === 'jour') { B.du = a; B.au = a; }
+  else if (p === 'semaine') { const x = new Date(); x.setDate(x.getDate() - (x.getDay() + 6) % 7); B.du = isoDate(x); B.au = a; }
+  else if (p === 'mois') { B.du = a.slice(0, 8) + '01'; B.au = a; }
+  else if (p === 'moisPrec') { const x = new Date(); x.setDate(1); x.setMonth(x.getMonth() - 1); B.du = isoDate(x);
+    const y = new Date(); y.setDate(0); B.au = isoDate(y); }
+  else if (p === 'annee') { B.du = a.slice(0, 5) + '01-01'; B.au = a; }
+  vueTableauBord();
+}
+
+function tbSection(titre, html){
+  return '<div class="bloc" style="margin-bottom:14px;break-inside:avoid"><h3 style="margin:0 0 10px;color:var(--bleu);font-size:16px">' + titre + '</h3>' + html + '</div>';
+}
+
+function tbTable(entetes, lignes, vide){
+  if (!lignes.length) return '<div class="vide" style="padding:14px">' + (vide || 'Aucune donnée sur la période.') + '</div>';
+  const d = 'style="text-align:right;white-space:nowrap"';
+  return '<div style="overflow-x:auto"><table><thead><tr>' + entetes.map((h, i) => '<th ' + (i ? d : '') + '>' + h + '</th>').join('') +
+    '</tr></thead><tbody>' + lignes.map(l => '<tr style="cursor:default">' + l.map((c, i) => '<td ' + (i ? d : '') + '>' + c + '</td>').join('') + '</tr>').join('') +
+    '</tbody></table></div>';
+}
+
+function dessinerTableauBord(){
+  const d = B.data;
+  const st = (lib, val, coul) => '<div class="stat"><small>' + lib + '</small><b' + (coul ? ' style="color:' + coul + '"' : '') + '>' + val + '</b></div>';
+  const maxJour = Math.max(1, ...d.parJour.map(x => x.ca));
+  const totCaisse = d.caisse.reduce((s, x) => ({ e: s.e + x.entrees, s: s.s + x.sorties }), { e: 0, s: 0 });
+  $('vue').innerHTML = '<h2>Tableau de bord</h2>' +
+    '<div class="bloc" style="margin-bottom:14px"><div class="entete-bloc" style="flex-wrap:wrap;margin:0">' +
+      '<span>Du</span><input type="date" value="' + d.du + '" style="max-width:170px" onchange="B.du=this.value;vueTableauBord()">' +
+      '<span>au</span><input type="date" value="' + d.au + '" max="' + aujourdhui() + '" style="max-width:170px" onchange="B.au=this.value;vueTableauBord()">' +
+      [['jour', 'Aujourd\'hui'], ['semaine', 'Cette semaine'], ['mois', 'Ce mois'], ['moisPrec', 'Mois dernier'], ['annee', 'Cette année']]
+        .map(p => '<button class="btn second" style="padding:8px 12px" onclick="periodeTB(\'' + p[0] + '\')">' + p[1] + '</button>').join('') +
+      '<span style="flex:1"></span><button class="btn" onclick="imprimerTableauBord()">Imprimer le rapport</button>' +
+    '</div></div>' +
+    '<div id="tb-contenu">' +
+    '<div class="stats">' +
+      st('Chiffre d\'affaires', fcfa(d.ca)) +
+      st('Coût des articles vendus', fcfa(d.cout)) +
+      st('Marge brute', fcfa(d.margeBrute), d.margeBrute < 0 ? 'var(--err)' : 'var(--ok)') +
+      st('Dépenses', fcfa(d.depenses), 'var(--err)') +
+      st('Bénéfice net', fcfa(d.benefice), d.benefice < 0 ? 'var(--err)' : 'var(--ok)') +
+    '</div><div class="stats">' +
+      st('Nombre de ventes', d.nbVentes + (d.nbVentes ? ' <small style="display:inline;font-size:12px;color:var(--gris)">(panier moyen ' + fcfa(Math.round(d.ca / d.nbVentes)) + ')</small>' : '')) +
+      st('Encaissé sur ventes', fcfa(d.encaisseVentes), 'var(--ok)') +
+      st('Crédit accordé', fcfa(d.credit), d.credit ? 'var(--err)' : '') +
+      st('Règlements clients reçus', fcfa(d.reglClients), 'var(--ok)') +
+      st('Achats de marchandises', fcfa(d.achats)) +
+    '</div>' +
+    '<h3 style="color:var(--bleu);margin:6px 0 10px">Situation à ce jour</h3><div class="stats">' +
+      st('Les clients vous doivent', fcfa(d.creancesClients), d.creancesClients ? 'var(--err)' : '') +
+      st('Vous devez aux fournisseurs', fcfa(d.dettesFournisseurs), d.dettesFournisseurs ? 'var(--err)' : '') +
+      st('Valeur du stock (prix d\'achat)', fcfa(d.valeurStock)) +
+      st('Articles en rupture', d.ruptures, d.ruptures ? 'var(--err)' : 'var(--ok)') +
+    '</div>' +
+    tbSection('Chiffre d\'affaires par jour', d.parJour.length ? d.parJour.map(x =>
+      '<div style="display:flex;align-items:center;gap:10px;margin:5px 0"><span style="width:80px;flex-shrink:0;color:var(--gris)">' + frDate(x.jour).slice(0, 5) + '</span>' +
+      '<div style="flex:1;background:var(--fond);border-radius:6px;height:14px"><div style="width:' + Math.max(2, Math.round(x.ca / maxJour * 100)) +
+      '%;background:var(--bleu);height:14px;border-radius:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact"></div></div>' +
+      '<b style="width:130px;text-align:right;white-space:nowrap">' + fcfa(x.ca) + '</b></div>').join('') : '<div class="vide" style="padding:14px">Aucune vente sur la période.</div>') +
+    tbSection('Point de caisse par mode de paiement', tbTable(['Mode', 'Entrées', 'Sorties', 'Solde'],
+      d.caisse.map(x => [esc(x.mode), fcfa(x.entrees), fcfa(x.sorties), '<b>' + fcfa(x.solde) + '</b>'])
+        .concat(d.caisse.length ? [['<b>Total</b>', '<b>' + fcfa(totCaisse.e) + '</b>', '<b>' + fcfa(totCaisse.s) + '</b>', '<b>' + fcfa(totCaisse.e - totCaisse.s) + '</b>']] : [])) +
+      '<p style="color:var(--gris);font-size:13px;margin:8px 0 0">Entrées = ventes encaissées + règlements clients. Sorties = dépenses + paiements fournisseurs.</p>') +
+    tbSection('Bilan par caissière / utilisateur', tbTable(['Nom', 'Ventes', 'Chiffre d\'affaires', 'Encaissé', 'Crédit', 'Règlements reçus', 'Dépenses'],
+      d.parCaissier.map(x => [esc(x.nom), x.nb, fcfa(x.ca), fcfa(x.encaisse), fcfa(x.credit), fcfa(x.reglements), fcfa(x.depenses)]))) +
+    tbSection('Articles vendus', tbTable(['Article', 'Famille', 'Quantité', 'Chiffre d\'affaires', 'Marge'],
+      d.parArticle.map(x => [esc(x.designation) + ' <small style="color:var(--gris)">' + esc(x.code) + '</small>', esc(x.famille),
+        x.qte.toLocaleString('fr-FR'), fcfa(x.ca), '<span style="color:' + (x.marge < 0 ? 'var(--err)' : 'var(--ok)') + '">' + fcfa(Math.round(x.marge)) + '</span>']))) +
+    tbSection('Chiffre d\'affaires par client', tbTable(['Client', 'Ventes', 'Chiffre d\'affaires'],
+      d.parClient.map(x => [esc(x.nom), x.nb, fcfa(x.ca)]))) +
+    tbSection('Achats par fournisseur', tbTable(['Fournisseur', 'Achats', 'Montant'],
+      d.parFournisseur.map(x => [esc(x.nom), x.nb, fcfa(x.total)]))) +
+    tbSection('Dépenses par catégorie', tbTable(['Catégorie', 'Montant'],
+      d.parCategorie.map(x => [esc(x.categorie), fcfa(x.montant)]))) +
+    '</div>';
+}
+
+function imprimerTableauBord(){
+  const d = B.data;
+  $('impression').innerHTML = '<div class="fact"><div class="ent"><div><h1>' + esc(d.entreprise) + '</h1><div>Tableau de bord</div></div>' +
+    '<div class="num"><div>Période</div><b>' + frDate(d.du) + ' → ' + frDate(d.au) + '</b></div></div>' + $('tb-contenu').innerHTML + '</div>';
+  window.print();
+}
+
+demarrer();
+</script>
+</body>
+</html>
