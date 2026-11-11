@@ -218,17 +218,173 @@
     .fact .ent{flex-direction:column}
     .fact .num{text-align:left}
   }
+
+  /* =====================================================================
+     DESIGN 2026 — habillage uniquement (aucun calcul ni donnée modifiés)
+     ===================================================================== */
+  :root{
+    --texte:#1A2233; --gris:#5B6475; --bord:#D5DBE7; --teinte:#E9EEF8;
+    --police:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  body{font-family:var(--police);font-size:16px;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+  input,select,textarea{min-height:46px;font-size:16px;color:var(--texte);border:1.5px solid var(--bord);border-radius:10px}
+  input[type=checkbox],input[type=radio]{min-height:0;width:auto}
+  label{font-size:13.5px}
+  button:focus-visible,.btn:focus-visible{outline:2px solid var(--bleu2);outline-offset:2px}
+  .btn{min-height:42px;border-radius:10px;font-weight:700;transition:background .15s,transform .05s}
+  .btn:active{transform:scale(.98)}
+  .btn.second{border:1.5px solid var(--bord)}
+  .btn.second:hover{background:var(--teinte)}
+  .btn.orange:hover{background:#A84B0C}
+  .reseau,.fact{font-family:var(--police)}
+
+  /* Écran de chargement animé */
+  #ecran-chargement{background:var(--bleu);color:#fff}
+  #ecran-chargement > p{background:#fff;padding:16px 18px;border-radius:12px;margin:0}
+  .splash{display:flex;flex-direction:column;align-items:center;text-align:center}
+  .splash .logo{width:104px;height:104px;border-radius:26px;box-shadow:0 0 0 2px rgba(255,255,255,.22),0 18px 40px rgba(0,0,0,.28);
+    animation:sp-entree .7s cubic-bezier(.2,1.4,.4,1) both,sp-souffle 2.2s ease-in-out .7s infinite}
+  .splash h1{margin:22px 0 4px;font-size:22px;font-weight:800;letter-spacing:.4px;animation:sp-monte .6s ease .25s both}
+  .splash p{margin:0;font-size:14.5px;color:#C9D4EA;animation:sp-monte .6s ease .4s both}
+  .splash .piste{width:150px;height:5px;border-radius:3px;background:rgba(255,255,255,.18);margin-top:28px;overflow:hidden;animation:sp-monte .6s ease .55s both}
+  .splash .piste i{display:block;width:45%;height:100%;border-radius:3px;background:#F08A3C;animation:sp-glisse 1.15s ease-in-out infinite}
+  .splash small{margin-top:12px;font-size:13px;color:#C9D4EA;animation:sp-monte .6s ease .7s both}
+  @keyframes sp-entree{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+  @keyframes sp-souffle{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+  @keyframes sp-monte{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes sp-glisse{0%{transform:translateX(-110%)}100%{transform:translateX(240%)}}
+  @media (prefers-reduced-motion:reduce){.splash *{animation:none!important}}
+
+  /* Connexion */
+  .carte-accueil{border-radius:20px;box-shadow:0 10px 30px rgba(31,56,100,.14);max-width:400px;animation:sp-monte .35s ease both}
+  .carte-accueil header{padding:28px 24px 24px;text-align:center}
+  .carte-accueil header .logo{width:76px;height:76px;border-radius:20px;display:block;margin:0 auto 12px;box-shadow:0 0 0 2px rgba(255,255,255,.22)}
+  .carte-accueil header h1{font-size:21px;font-weight:800}
+  .carte-accueil header p{font-size:14px;opacity:1;color:#C9D4EA}
+  .carte-accueil .corps{padding:22px 24px 26px}
+  .choix-user{min-height:52px;font-weight:600}
+  .pin{min-height:56px;font-size:24px;letter-spacing:10px;color:var(--bleu);border-width:2px}
+  .carte-accueil .btn{min-height:52px;font-size:16px;border-radius:12px}
+  .msg{font-size:14px}
+
+  /* Barre du haut et menu */
+  .barre{padding:8px 16px;min-height:60px}
+  .barre .logo{width:36px;height:36px;border-radius:9px;box-shadow:0 0 0 1.5px rgba(255,255,255,.25);flex-shrink:0}
+  .barre h1{font-weight:800;letter-spacing:.3px;min-width:0}
+  .barre .btn{min-height:40px}
+  .app{min-height:calc(100vh - 60px)}
+  nav{display:flex;flex-direction:column;gap:2px;width:244px;padding:14px 10px}
+  nav button{min-height:46px;border-radius:10px;font-size:15px;gap:12px;font-family:inherit}
+  nav button svg{color:var(--gris);flex-shrink:0}
+  nav button.actif{background:var(--teinte)}
+  nav button.actif svg{color:var(--bleu)}
+  nav .menu-plus{display:contents}
+  nav .btn-plus,nav .lib-court{display:none}
+
+  /* Contenu */
+  main{padding:24px}
+  main h2{font-size:23px;font-weight:800}
+  .bloc{border-radius:16px}
+  .onglets button{min-height:42px;font-weight:600;border:1.5px solid var(--bord);font-family:inherit;font-size:15px;color:var(--texte)}
+  .onglets button.actif{font-weight:700;color:#fff}
+  th{font-size:12.5px;letter-spacing:.3px}
+  td{font-variant-numeric:tabular-nums}
+  .badge{padding:4px 10px}
+  .stat{border-radius:14px;padding:14px 16px}
+  .stat small{font-size:13px;font-weight:600}
+  .stat b{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+  .stat.hero{background:var(--bleu);border-color:var(--bleu);order:-1;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .stat.hero small{color:#C9D4EA}
+  .stat.hero b{color:#fff;font-size:26px}
+  .stat.fort b{font-size:22px}
+  .modale{border-radius:18px;padding:24px}
+  .toast{border-radius:12px;font-weight:600}
+
+  /* Caisse */
+  .recherche-art input{min-height:54px;border-radius:14px;padding-left:46px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='%231F3864' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='6'/%3E%3Cpath d='M20 20l-4.5-4.5'/%3E%3C/svg%3E") no-repeat 14px center}
+  .sugg{padding:12px 14px}
+  .recap .net{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}
+  .recap .ligne b{font-variant-numeric:tabular-nums}
+  .btn-valider{width:100%;min-height:54px;font-size:17px;margin-top:6px;border-radius:12px}
+
+  /* Téléphone */
+  @media (max-width:760px){
+    .barre{padding:8px 12px;gap:8px}
+    .barre h1{display:none}
+    .barre .logo{margin-right:auto}
+    .entete-bloc{justify-content:flex-start}
+    .entete-bloc > .btn:last-child{margin-left:auto}
+    .btn{min-height:46px}
+    .app{display:block}
+    nav{position:fixed;left:0;right:0;bottom:0;z-index:7;width:auto;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;
+      overflow:visible;background:#fff;border:0;border-top:1px solid var(--ligne);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+    nav button{order:0!important;flex-direction:column;justify-content:center;gap:3px;min-height:54px;padding:4px 2px;width:auto;
+      font-size:11.5px;font-weight:600;color:#4A5468;text-align:center;white-space:nowrap}
+    nav button.actif{color:var(--bleu);font-weight:800}
+    nav button .lib{display:none}
+    nav button .lib-court{display:block}
+    nav .btn-plus{display:flex}
+    nav .menu-plus{display:none;position:fixed;left:8px;right:8px;bottom:calc(74px + env(safe-area-inset-bottom));background:#fff;
+      border:1px solid var(--ligne);border-radius:16px;box-shadow:0 -8px 30px rgba(20,30,50,.18);padding:8px;grid-template-columns:1fr 1fr;gap:4px}
+    nav.ouvert .menu-plus{display:grid}
+    nav .menu-plus button{flex-direction:row;justify-content:flex-start;gap:10px;min-height:48px;padding:0 12px;font-size:14.5px;text-align:left;white-space:normal}
+    nav .menu-plus button .lib{display:block}
+    nav .menu-plus button .lib-court{display:none}
+    main{padding:14px 14px calc(92px + env(safe-area-inset-bottom))}
+    main h2{font-size:21px}
+    .toast{bottom:auto;top:70px;max-width:92vw;text-align:center}
+    .stats{grid-template-columns:1fr 1fr;gap:10px}
+    .stat{padding:12px}
+    .stat b{font-size:17px}
+    .stat.hero{grid-column:1 / -1;padding:16px}
+    .stat.hero b{font-size:28px}
+    .stat.fort b{font-size:18px}
+    .modale{padding:18px}
+    .actions{flex-wrap:wrap}
+
+    /* Caisse : net à payer + bouton toujours visibles en bas */
+    .caisse{padding-bottom:84px}
+    .payer{position:fixed;left:0;right:0;bottom:calc(67px + env(safe-area-inset-bottom));z-index:6;background:#fff;border-top:1px solid var(--ligne);
+      box-shadow:0 -6px 18px rgba(31,56,100,.10);padding:9px 14px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:0 12px}
+    .payer .ligne{margin:0}
+    .payer .l-net{grid-column:1;flex-direction:column;align-items:flex-start;font-size:12.5px;font-weight:600;color:var(--gris)}
+    .payer .l-net .net{font-size:22px;line-height:1.15}
+    .payer #c-solde{grid-column:1;font-size:13px;justify-content:flex-start;gap:8px}
+    .payer .btn-valider{grid-column:2;grid-row:1 / span 2;width:auto;margin:0;padding:0 18px}
+
+    /* Panier compact */
+    table.panier,table.panier tbody{display:block}
+    table.panier thead{display:none}
+    table.panier tr{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--ligne)}
+    table.panier td{border:0;padding:0}
+    table.panier td:nth-child(1){grid-column:1 / span 2}
+    table.panier td:nth-child(5){grid-column:3;grid-row:1;text-align:right}
+    table.panier td:nth-child(2){grid-column:1;grid-row:2}
+    table.panier td:nth-child(3){grid-column:2;grid-row:2;color:var(--gris)}
+    table.panier td:nth-child(3)::before{content:'× '}
+    table.panier td:nth-child(4){grid-column:3;grid-row:2;font-weight:800;text-align:right}
+    table.panier td:nth-child(5) .btn{min-width:44px;min-height:44px}
+
+    /* Tableaux → cartes lisibles */
+    table.cartes,table.cartes tbody{display:block}
+    table.cartes thead{display:none}
+    table.cartes tbody{display:grid;gap:8px}
+    table.cartes tr{display:block;background:#fff;border:1px solid var(--ligne);border-radius:12px;padding:8px 12px}
+    table.cartes td{display:block;overflow:hidden;border:0;padding:4px 0;text-align:right;min-height:26px}
+    table.cartes td[data-label]::before{content:attr(data-label);float:left;margin-right:14px;font-size:12.5px;font-weight:600;color:var(--gris);text-align:left}
+    table.cartes td.col-mobile-cache,table.cartes td:empty{display:none}
+  }
 </style>
 </head>
 <body>
 
 <!-- Chargement -->
-<div id="ecran-chargement" class="centre"><p style="color:var(--gris)">Chargement…</p></div>
+<div id="ecran-chargement" class="centre"><div class="splash"><img class="logo" src="icone-512.png" alt="" width="104" height="104"><h1 class="nom-ent">MAGASIN MOINS CHER</h1><p>Gestion des stocks &amp; caisses</p><div class="piste"><i></i></div><small>Chargement…</small></div></div>
 
 <!-- Premier lancement -->
 <div id="ecran-installation" class="centre cache">
   <div class="carte-accueil">
-    <header><h1 class="nom-ent">MAGASIN MOINS CHER</h1><p>Premier lancement — création du compte gérant</p></header>
+    <header><img class="logo" src="icone-192.png" alt="" width="76" height="76"><h1 class="nom-ent">MAGASIN MOINS CHER</h1><p>Premier lancement — création du compte gérant</p></header>
     <div class="corps">
       <label>Nom et prénom du gérant</label>
       <input id="ins-nom" autocomplete="off">
@@ -245,7 +401,7 @@
 <!-- Connexion -->
 <div id="ecran-connexion" class="centre cache">
   <div class="carte-accueil">
-    <header><h1 class="nom-ent">MAGASIN MOINS CHER</h1><p>Gestion des stocks &amp; caisses</p></header>
+    <header><img class="logo" src="icone-192.png" alt="" width="76" height="76"><h1 class="nom-ent">MAGASIN MOINS CHER</h1><p>Gestion des stocks &amp; caisses</p></header>
     <div class="corps">
       <label>Qui êtes-vous ?</label>
       <select id="con-user" class="choix-user" aria-label="Qui êtes-vous ?" onchange="choisirUser(this)"></select>
@@ -261,6 +417,7 @@
 <!-- Application -->
 <div id="ecran-app" class="cache">
   <div class="barre">
+    <img class="logo" src="icone-192.png" alt="" width="36" height="36">
     <h1 class="nom-ent">MAGASIN MOINS CHER</h1>
     <button id="btn-installer" class="btn cache" onclick="installerApp()">Installer l'application</button>
     <button id="etat-reseau" class="reseau ok" onclick="ouvrirAttente()" aria-label="État de la connexion et ventes en attente"></button>
@@ -651,7 +808,10 @@ const ICO = {
   plus: '<path d="M12 5v14M5 12h14"/>',
   horsligne: '<path d="M3 3l18 18"/><path d="M6.3 8.4A5 5 0 0 0 7 18h10.6M20.4 15.6A3.6 3.6 0 0 0 17 11h-.4a6 6 0 0 0-7.2-4.6"/>',
   entrepot: '<path d="M3 21V9l9-5 9 5v12"/><path d="M7 21v-8h10v8M7 17h10"/>',
-  fleches: '<path d="M4 8h15l-3.5-3.5M20 16H5l3.5 3.5"/>'
+  fleches: '<path d="M4 8h15l-3.5-3.5M20 16H5l3.5 3.5"/>',
+  reglages: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>',
+  question: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 4 2c-.9.6-1.5 1.1-1.5 2.2M12 17h.01"/>',
+  points: '<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>'
 };
 const MAG = 'MAG';
 function ico(n, t, c){ return '<svg width="' + (t || 24) + '" height="' + (t || 24) + '" viewBox="0 0 24 24" fill="none" stroke="' + (c || 'currentColor') +
@@ -688,6 +848,25 @@ document.addEventListener('click', () => document.querySelectorAll('.info.ouvert
   const c = i.closest('.modale,.bloc,main') || document.body, r = i.getBoundingClientRect(), b = c.getBoundingClientRect();
   i.classList.toggle('g', r.left + 255 > Math.min(b.right, window.innerWidth));
 }, { passive: true }));
+
+/* Affichage : sur téléphone les tableaux deviennent des cartes ; chaque cellule porte le titre de sa colonne. */
+function etiqueterTableaux(){
+  document.querySelectorAll('#vue table, #modale-zone table').forEach(t => {
+    if (t.classList.contains('panier') || t.closest('.fact')) return;
+    const h = Array.prototype.map.call(t.querySelectorAll('thead th'), x => x.textContent.trim());
+    if (!h.length) return;
+    t.classList.add('cartes');
+    t.querySelectorAll('tbody tr').forEach(r => {
+      if (Array.prototype.some.call(r.children, c => c.colSpan > 1)) return;
+      Array.prototype.forEach.call(r.children, (c, i) => { if (h[i] && !c.hasAttribute('data-label')) c.setAttribute('data-label', h[i]); });
+    });
+  });
+}
+(function(){
+  let prevu = false;
+  const lancer = () => { if (prevu) return; prevu = true; requestAnimationFrame(() => { prevu = false; etiqueterTableaux(); }); };
+  try { new MutationObserver(lancer).observe(document.body, { childList: true, subtree: true }); } catch(e) {}
+})();
 
 function afficher(ecran){
   ['chargement','installation','connexion','app'].forEach(n => $('ecran-' + n).classList.toggle('cache', n !== ecran));
@@ -816,12 +995,22 @@ function ouvrirApp(){
   setTimeout(() => synchroniser(), 1200);
 }
 
+const MENU_ICO = { accueil: 'graphe', caisse: 'panier', articles: 'etiquette', achats: 'camion', stock: 'boite', tiers: 'personnes',
+                   depenses: 'recu', impayes: 'portefeuille', parametres: 'reglages', aide: 'question' };
+const MENU_COURT = { accueil: 'Bilan', caisse: 'Caisse', articles: 'Articles', stock: 'Stock', impayes: 'Impayés' };
 function dessinerMenu(){
-  $('menu').innerHTML = MODULES
-    .filter(m => !m.gerant || S.user.fonction === 'Gérant')
-    .map(m => '<button class="' + (m.id === S.vue ? 'actif' : '') + '" onclick="allerA(\'' + m.id + '\')">' +
-              esc(m.nom) + '<span class="etape">' + (m.pret ? '' : 'étape ' + m.etape) + '</span></button>')
-    .join('');
+  const dispo = MODULES.filter(m => !m.gerant || S.user.fonction === 'Gérant');
+  // sur téléphone : 4 raccourcis dans la barre du bas, le reste derrière « Plus »
+  const prim = ['caisse', 'stock', 'impayes', 'accueil', 'articles'].filter(id => dispo.some(m => m.id === id)).slice(0, 4);
+  const bouton = m => '<button class="' + (m.id === S.vue ? 'actif' : '') + '" style="order:' + MODULES.indexOf(m) + '" onclick="allerA(\'' + m.id + '\')">' +
+      ico(MENU_ICO[m.id] || 'boite', 20) + '<span class="lib">' + esc(m.nom) + '</span><span class="lib-court">' + esc(MENU_COURT[m.id] || m.nom) + '</span>' +
+      '<span class="etape">' + (m.pret ? '' : 'étape ' + m.etape) + '</span></button>';
+  const autres = dispo.filter(m => prim.indexOf(m.id) < 0);
+  $('menu').classList.remove('ouvert');
+  $('menu').innerHTML = prim.map(id => bouton(dispo.find(m => m.id === id))).join('') +
+    '<div class="menu-plus">' + autres.map(bouton).join('') + '</div>' +
+    '<button class="btn-plus' + (autres.some(m => m.id === S.vue) ? ' actif' : '') + '" aria-label="Plus de menus" ' +
+      'onclick="this.parentNode.classList.toggle(\'ouvert\')">' + ico('points', 20) + '<span class="lib-court">Plus</span></button>';
 }
 
 function allerA(id){
@@ -1366,9 +1555,9 @@ function ecranVente(){
       '</div>' +
       aide('Vide = payé exactement · plus = monnaie à rendre · moins = crédit (fiche client obligatoire).') +
       '<div class="ligne"><span>Total</span><b id="c-total"></b></div>' +
-      '<div class="ligne"><span>Net à payer</span><span class="net" id="c-net"></span></div>' +
+      '<div class="payer"><div class="ligne l-net"><span>Net à payer</span><span class="net" id="c-net"></span></div>' +
       '<div class="ligne" id="c-solde"></div>' +
-      '<button class="btn orange" style="width:100%;padding:14px;font-size:16px;margin-top:6px" onclick="validerVente(this)">Valider la vente</button>' +
+      '<button class="btn orange btn-valider" onclick="validerVente(this)">Valider la vente</button></div>' +
       '<button class="btn second" style="width:100%;margin-top:8px" onclick="viderPanier()">Vider le panier</button>' +
     '</div></div>';
   dessinerPanier();
@@ -1506,9 +1695,9 @@ function ecranAjout(){
       '<label>Montant versé maintenant</label><input id="c-verse" inputmode="decimal" placeholder="= articles ajoutés" oninput="totauxVente()">' +
       aide('Possible uniquement pour une vente du jour. Pour retirer un article, le gérant annule la vente.') +
       '<div class="ligne"><span>Articles ajoutés</span><b id="c-total"></b></div>' +
-      '<div class="ligne"><span>Nouveau total facture</span><span class="net" id="c-net"></span></div>' +
+      '<div class="payer"><div class="ligne l-net"><span>Nouveau total facture</span><span class="net" id="c-net"></span></div>' +
       '<div class="ligne" id="c-solde"></div>' +
-      '<button class="btn orange" style="width:100%;padding:14px;font-size:16px;margin-top:6px" onclick="validerVente(this)">Ajouter à la facture</button>' +
+      '<button class="btn orange btn-valider" onclick="validerVente(this)">Ajouter à la facture</button></div>' +
       '<button class="btn second" style="width:100%;margin-top:8px" onclick="annulerAjout()">Annuler l\'ajout</button>' +
     '</div></div>';
   dessinerPanier();
@@ -2266,7 +2455,7 @@ function tbTable(entetes, lignes, vide){
 
 function dessinerTableauBord(){
   const d = B.data;
-  const st = (lib, val, coul) => '<div class="stat"><small>' + lib + '</small><b' + (coul ? ' style="color:' + coul + '"' : '') + '>' + val + '</b></div>';
+  const st = (lib, val, coul, cls) => '<div class="stat' + (cls ? ' ' + cls : '') + '"><small>' + lib + '</small><b' + (coul ? ' style="color:' + coul + '"' : '') + '>' + val + '</b></div>';
   const maxJour = Math.max(1, ...d.parJour.map(x => x.ca));
   const totCaisse = d.caisse.reduce((s, x) => ({ e: s.e + x.entrees, s: s.s + x.sorties }), { e: 0, s: 0 });
   $('vue').innerHTML = '<h2>Tableau de bord</h2>' +
@@ -2279,11 +2468,11 @@ function dessinerTableauBord(){
     '</div></div>' +
     '<div id="tb-contenu">' +
     '<div class="stats">' +
-      st('Chiffre d\'affaires', fcfa(d.ca)) +
+      st('Chiffre d\'affaires', fcfa(d.ca), '', 'fort') +
       st('Coût des articles vendus', fcfa(d.cout)) +
       st('Marge brute', fcfa(d.margeBrute), d.margeBrute < 0 ? 'var(--err)' : 'var(--ok)') +
       st('Dépenses', fcfa(d.depenses), 'var(--err)') +
-      st('Bénéfice net', fcfa(d.benefice), d.benefice < 0 ? 'var(--err)' : 'var(--ok)') +
+      st('Bénéfice net', fcfa(d.benefice), d.benefice < 0 ? '#FFB4AB' : '', 'hero') +
     '</div><div class="stats">' +
       st('Nombre de ventes', d.nbVentes + (d.nbVentes ? ' <small style="display:inline;font-size:12px;color:var(--gris)">(panier moyen ' + fcfa(Math.round(d.ca / d.nbVentes)) + ')</small>' : '')) +
       st('Encaissé sur ventes', fcfa(d.encaisseVentes), 'var(--ok)') +
