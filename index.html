@@ -280,6 +280,7 @@
   nav button.actif svg{color:var(--bleu)}
   nav .menu-plus{display:contents}
   nav .btn-plus,nav .lib-court{display:none}
+  .periode-boutons{display:contents}
 
   /* Contenu */
   main{padding:24px}
@@ -373,6 +374,26 @@
     table.cartes td{display:block;overflow:hidden;border:0;padding:4px 0;text-align:right;min-height:26px}
     table.cartes td[data-label]::before{content:attr(data-label);float:left;margin-right:14px;font-size:12.5px;font-weight:600;color:var(--gris);text-align:left}
     table.cartes td.col-mobile-cache,table.cartes td:empty{display:none}
+    table.cartes tr{display:flex;flex-direction:column}
+    table.cartes td.c-titre{order:-2;text-align:left;font-size:16px;padding-bottom:0}
+    table.cartes td.c-code{order:-1;text-align:left;font-size:12.5px;color:var(--gris);padding-top:0;min-height:0}
+    table.cartes td.c-titre[data-label]::before,table.cartes td.c-code[data-label]::before{content:none}
+
+    /* Bandeaux à faire glisser : chiffres du stock, onglets, dépôts, périodes */
+    .stats-ligne,.onglets,.depots-barre,.periode-boutons{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+    .stats-ligne::-webkit-scrollbar,.onglets::-webkit-scrollbar,.depots-barre::-webkit-scrollbar,.periode-boutons::-webkit-scrollbar{display:none}
+    .stats-ligne .stat{flex:0 0 auto;min-width:104px;max-width:190px;padding:8px 12px}
+    .stats-ligne .stat small{font-size:12px;margin-bottom:1px}
+    .stats-ligne .stat b{font-size:16px;white-space:nowrap}
+    .onglets button,.depot-carte,.periode-boutons .btn{flex:0 0 auto;white-space:nowrap}
+    .entete-bloc > input:not([type=checkbox]):not([type=date]),.entete-bloc > select{max-width:none!important;flex:1 1 140px}
+
+    /* Tableau de bord : dates sur une ligne, périodes à faire glisser */
+    .periode{display:grid;grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px}
+    .periode input[type=date]{max-width:none!important;min-width:0;padding:8px 6px;font-size:14px}
+    .periode-boutons{grid-column:1 / -1}
+    .periode .pousse{display:none}
+    .periode > .btn:last-child{grid-column:1 / -1;margin:0}
   }
 </style>
 </head>
@@ -856,9 +877,11 @@ function etiqueterTableaux(){
     const h = Array.prototype.map.call(t.querySelectorAll('thead th'), x => x.textContent.trim());
     if (!h.length) return;
     t.classList.add('cartes');
+    const titre = h[0] === 'Code' && h.length > 1;
     t.querySelectorAll('tbody tr').forEach(r => {
       if (Array.prototype.some.call(r.children, c => c.colSpan > 1)) return;
       Array.prototype.forEach.call(r.children, (c, i) => { if (h[i] && !c.hasAttribute('data-label')) c.setAttribute('data-label', h[i]); });
+      if (titre && r.children.length > 1) { r.children[0].classList.add('c-code'); r.children[1].classList.add('c-titre'); }
     });
   });
 }
@@ -1961,7 +1984,7 @@ function dessinerStock(){
   const va = arts.reduce((s, a) => s + (K.depot ? Math.round(stockDe(a) * a.pa) : a.valeurAchat), 0);
   const vv = arts.reduce((s, a) => s + (K.depot ? Math.round(stockDe(a) * a.pv) : a.valeurVente), 0);
   const ou = K.depot ? ' — ' + esc(nomDepot(K.depot)) : '';
-  const tete = '<h2>Stock & inventaire</h2><div class="stats">' +
+  const tete = '<h2>Stock & inventaire</h2><div class="stats stats-ligne">' +
       '<div class="stat"><small>Articles actifs</small><b>' + arts.length + '</b></div>' +
       '<div class="stat"><small>Stock bas</small><b style="color:' + (bas ? 'var(--orange)' : 'var(--ok)') + '">' + bas + '</b></div>' +
       '<div class="stat"><small>En rupture</small><b style="color:' + (rupture ? 'var(--err)' : 'var(--ok)') + '">' + rupture + '</b></div>' +
@@ -2459,12 +2482,12 @@ function dessinerTableauBord(){
   const maxJour = Math.max(1, ...d.parJour.map(x => x.ca));
   const totCaisse = d.caisse.reduce((s, x) => ({ e: s.e + x.entrees, s: s.s + x.sorties }), { e: 0, s: 0 });
   $('vue').innerHTML = '<h2>Tableau de bord</h2>' +
-    '<div class="bloc" style="margin-bottom:14px"><div class="entete-bloc" style="flex-wrap:wrap;margin:0">' +
+    '<div class="bloc" style="margin-bottom:14px"><div class="entete-bloc periode" style="flex-wrap:wrap;margin:0">' +
       '<span>Du</span><input type="date" value="' + d.du + '" style="max-width:170px" onchange="B.du=this.value;vueTableauBord()">' +
-      '<span>au</span><input type="date" value="' + d.au + '" max="' + aujourdhui() + '" style="max-width:170px" onchange="B.au=this.value;vueTableauBord()">' +
+      '<span>au</span><input type="date" value="' + d.au + '" max="' + aujourdhui() + '" style="max-width:170px" onchange="B.au=this.value;vueTableauBord()"><div class="periode-boutons">' +
       [['jour', 'Aujourd\'hui'], ['semaine', 'Cette semaine'], ['mois', 'Ce mois'], ['moisPrec', 'Mois dernier'], ['annee', 'Cette année']]
         .map(p => '<button class="btn second" style="padding:8px 12px" onclick="periodeTB(\'' + p[0] + '\')">' + p[1] + '</button>').join('') +
-      '<span style="flex:1"></span><button class="btn" onclick="imprimerTableauBord()">Imprimer le rapport</button>' +
+      '</div><span class="pousse" style="flex:1"></span><button class="btn" onclick="imprimerTableauBord()">Imprimer le rapport</button>' +
     '</div></div>' +
     '<div id="tb-contenu">' +
     '<div class="stats">' +

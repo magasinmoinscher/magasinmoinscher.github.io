@@ -1,5 +1,5 @@
-/* MAGASIN MOINS CHER — fonctionnement hors ligne. Version 3.1-design */
-const MEMOIRE = 'mmc-3.1-design';
+/* MAGASIN MOINS CHER — fonctionnement hors ligne. Version 3.2-design */
+const MEMOIRE = 'mmc-3.2-design';
 const FICHIERS = ['./', './index.html', './manifest.webmanifest', './icone-192.png', './icone-512.png', './icone-maskable.png', './favicon-32.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(MEMOIRE).then(c => c.addAll(FICHIERS)).then(() => self.skipWaiting()));
